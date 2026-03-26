@@ -4,27 +4,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Operations Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   /* ═══════════════════════════════════════════════════════════
-     CSS CUSTOM PROPERTIES — single place to tune the palette
+     CSS CUSTOM PROPERTIES
      ═══════════════════════════════════════════════════════════ */
   :root {
-    --bg-primary:    #0a0e17;
-    --bg-card:       #111827;
-    --bg-card-alt:   #1a2236;
-    --border-color:  #1e2a3a;
+    --bg-primary:    #060a14;
+    --bg-card:       rgba(15, 23, 42, 0.6);
+    --bg-card-alt:   rgba(22, 33, 55, 0.55);
+    --border-color:  rgba(56, 189, 248, 0.08);
+    --border-glow:   rgba(56, 189, 248, 0.18);
     --text-primary:  #e2e8f0;
     --text-muted:    #64748b;
     --text-dim:      #475569;
     --accent:        #38bdf8;
-    --accent-glow:   rgba(56, 189, 248, 0.25);
+    --accent-glow:   rgba(56, 189, 248, 0.35);
     --accent-green:  #34d399;
     --accent-amber:  #fbbf24;
-    --alert-bg:      rgba(251, 191, 36, 0.08);
-    --alert-border:  rgba(251, 191, 36, 0.35);
+    --accent-red:    #f87171;
+    --alert-bg:      rgba(251, 191, 36, 0.06);
+    --alert-border:  rgba(251, 191, 36, 0.4);
     --alert-text:    #fbbf24;
+    --alert-glow:    rgba(251, 191, 36, 0.3);
     --completed-dot: #34d399;
-    --upcoming-dot:  #1e293b;
+    --upcoming-dot:  rgba(30, 41, 59, 0.6);
+    --glass-blur:    blur(20px);
+    --ring-size:     clamp(10rem, 22vmin, 22rem);
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -36,31 +44,85 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
   }
 
   /* ═══════════════════════════════════════════════════════════
-     MAIN GRID — left countdowns / right weather
+     ANIMATED BACKGROUND MESH
+     ═══════════════════════════════════════════════════════════ */
+  .bg-mesh {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bg-mesh::before,
+  .bg-mesh::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.3;
+  }
+  .bg-mesh::before {
+    width: 50vw; height: 50vw;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.4), transparent 70%);
+    top: -15%; left: -10%;
+    animation: meshFloat1 25s ease-in-out infinite alternate;
+  }
+  .bg-mesh::after {
+    width: 40vw; height: 40vw;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.35), transparent 70%);
+    bottom: -15%; right: -5%;
+    animation: meshFloat2 30s ease-in-out infinite alternate;
+  }
+  .bg-orb {
+    position: absolute;
+    width: 35vw; height: 35vw;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(52, 211, 153, 0.2), transparent 70%);
+    filter: blur(100px);
+    opacity: 0.25;
+    top: 60%; left: 35%;
+    animation: meshFloat3 22s ease-in-out infinite alternate;
+  }
+  @keyframes meshFloat1 {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(3vw, 5vh) scale(1.15); }
+  }
+  @keyframes meshFloat2 {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(-4vw, -3vh) scale(1.1); }
+  }
+  @keyframes meshFloat3 {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(5vw, -4vh) scale(0.9); }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     MAIN GRID
      ═══════════════════════════════════════════════════════════ */
   .dashboard {
+    position: relative;
+    z-index: 1;
     display: grid;
-    grid-template-columns: 34vw 1fr;
+    grid-template-columns: 36vw 1fr;
     grid-template-rows: 100vh;
     width: 100vw;
     height: 100vh;
   }
 
-  /* ── Left panel ── */
   .left-panel {
     display: grid;
     grid-template-rows: 1fr 1fr;
     gap: 1.2vh;
     padding: 1.5vh 1.2vw;
+    border-right: 1px solid rgba(56, 189, 248, 0.05);
   }
 
-  /* ── Right panel ── */
   .right-panel {
     display: grid;
     grid-template-rows: auto 1fr;
@@ -69,79 +131,174 @@
   }
 
   /* ═══════════════════════════════════════════════════════════
-     SECTION CARD (shared)
+     SECTION CARD — Glassmorphism
      ═══════════════════════════════════════════════════════════ */
   .section-card {
     background: var(--bg-card);
-    border: 0.15vmin solid var(--border-color);
-    border-radius: 1vmin;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-color);
+    border-radius: 1.2vmin;
     padding: 2vh 1.5vw;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     position: relative;
-    transition: background 0.6s ease, border-color 0.6s ease;
+    overflow: hidden;
+    transition: background 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
+    box-shadow: 0 0 30px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(56, 189, 248, 0.04);
+    animation: cardEntrance 0.8s ease-out both;
+  }
+  .section-card:nth-child(2) { animation-delay: 0.15s; }
+
+  @keyframes cardEntrance {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   /* ═══════════════════════════════════════════════════════════
      SECTION HEADER
      ═══════════════════════════════════════════════════════════ */
   .section-label {
-    font-size: clamp(0.7rem, 1vmin, 1.2rem);
+    font-size: clamp(0.6rem, 0.95vmin, 1rem);
     text-transform: uppercase;
-    letter-spacing: 0.25vw;
+    letter-spacing: 0.3vw;
     color: var(--text-muted);
-    margin-bottom: 0.8vh;
+    margin-bottom: 0.4vh;
+    font-weight: 600;
   }
 
   .section-title {
-    font-size: clamp(1.2rem, 2.8vmin, 2.6rem);
-    font-weight: 700;
+    font-size: clamp(1.1rem, 2.6vmin, 2.4rem);
+    font-weight: 800;
     color: var(--accent);
-    margin-bottom: 0.3vh;
+    margin-bottom: 0.2vh;
+    text-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(56, 189, 248, 0.08);
   }
 
   /* ═══════════════════════════════════════════════════════════
-     COUNTDOWN DISPLAY
+     COUNTDOWN RING + VALUE
      ═══════════════════════════════════════════════════════════ */
+  .countdown-ring-wrap {
+    position: relative;
+    width: var(--ring-size);
+    height: var(--ring-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.8vh 0;
+  }
+
+  .countdown-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .ring-track {
+    fill: none;
+    stroke: rgba(56, 189, 248, 0.06);
+    stroke-width: 3.5;
+  }
+
+  .ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.6s ease;
+    filter: drop-shadow(0 0 6px var(--accent-glow));
+  }
+
+  .ring-fill.alert-ring {
+    stroke: var(--accent-amber);
+    filter: drop-shadow(0 0 8px var(--alert-glow));
+  }
+
   .countdown-value {
-    font-size: clamp(3rem, 9vmin, 9rem);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2rem, 6.5vmin, 6.5rem);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.3vw;
+    letter-spacing: 0.15vw;
     line-height: 1;
-    margin: 1.5vh 0;
     color: var(--text-primary);
-    transition: color 0.6s ease;
+    z-index: 1;
+    transition: color 0.6s ease, text-shadow 0.6s ease;
   }
 
   .next-label {
-    font-size: clamp(0.8rem, 1.6vmin, 1.5rem);
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
     color: var(--text-muted);
-    margin-bottom: 2vh;
+    margin-bottom: 1.2vh;
   }
 
   .next-label span {
     color: var(--accent);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   /* ═══════════════════════════════════════════════════════════
-     PIP / DOT INDICATORS
+     PROGRESS BAR
+     ═══════════════════════════════════════════════════════════ */
+  .progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0 0 1.2vmin 1.2vmin;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-green));
+    border-radius: 0 2px 2px 0;
+    transition: width 1s linear, background 0.6s ease;
+  }
+
+  .progress-fill.alert-progress {
+    background: linear-gradient(90deg, var(--accent-amber), var(--accent-red));
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     PIP / DOT INDICATORS + TIMELINE
      ═══════════════════════════════════════════════════════════ */
   .pip-row {
     display: flex;
     gap: 1.2vw;
-    align-items: center;
-    margin-top: 1vh;
+    align-items: flex-start;
+    margin-top: 0.6vh;
+    position: relative;
+  }
+
+  .pip-row::before {
+    content: '';
+    position: absolute;
+    top: calc(clamp(0.3rem, 0.7vmin, 0.65rem));
+    left: calc(clamp(0.3rem, 0.7vmin, 0.65rem));
+    right: calc(clamp(0.3rem, 0.7vmin, 0.65rem));
+    height: 1px;
+    background: linear-gradient(90deg,
+      var(--completed-dot) 0%,
+      var(--text-dim) 50%,
+      var(--upcoming-dot) 100%);
+    z-index: 0;
+    opacity: 0.4;
   }
 
   .pip {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5vh;
+    gap: 0.4vh;
+    z-index: 1;
   }
 
   .pip-dot {
@@ -149,12 +306,13 @@
     height: clamp(0.6rem, 1.4vmin, 1.3rem);
     border-radius: 50%;
     background: var(--upcoming-dot);
-    border: 0.15vmin solid var(--text-dim);
-    transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    border: 2px solid var(--text-dim);
+    transition: all 0.4s ease;
   }
 
   .pip-time {
-    font-size: clamp(0.45rem, 0.9vmin, 0.8rem);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.4rem, 0.8vmin, 0.7rem);
     color: var(--text-dim);
     font-variant-numeric: tabular-nums;
   }
@@ -162,72 +320,77 @@
   .pip.completed .pip-dot {
     background: var(--completed-dot);
     border-color: var(--completed-dot);
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
   }
-  .pip.completed .pip-time {
-    color: var(--completed-dot);
-  }
+  .pip.completed .pip-time { color: var(--completed-dot); }
 
   .pip.current .pip-dot {
     background: var(--accent-amber);
     border-color: var(--accent-amber);
-    box-shadow: 0 0 0.8vmin var(--accent-amber);
+    box-shadow: 0 0 8px var(--accent-amber), 0 0 16px rgba(251, 191, 36, 0.3);
     animation: pipPulse 1.5s ease-in-out infinite;
   }
-  .pip.current .pip-time {
-    color: var(--accent-amber);
-    font-weight: 600;
-  }
+  .pip.current .pip-time { color: var(--accent-amber); font-weight: 700; }
 
   @keyframes pipPulse {
-    0%, 100% { box-shadow: 0 0 0.4vmin rgba(251,191,36,0.4); }
-    50%      { box-shadow: 0 0 1.2vmin rgba(251,191,36,0.8); }
+    0%, 100% { box-shadow: 0 0 4px rgba(251,191,36,0.4), 0 0 10px rgba(251,191,36,0.15); }
+    50%      { box-shadow: 0 0 10px rgba(251,191,36,0.8), 0 0 20px rgba(251,191,36,0.3); }
   }
 
   /* ═══════════════════════════════════════════════════════════
-     ALERT STATE
+     ALERT STATE — Enhanced
      ═══════════════════════════════════════════════════════════ */
   .section-card.alert-active {
     background: var(--alert-bg);
     border-color: var(--alert-border);
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.1), inset 0 0 0 1px rgba(251, 191, 36, 0.1);
     animation: sectionPulse 2s ease-in-out infinite;
   }
 
   .section-card.alert-active .countdown-value {
     color: var(--alert-text);
+    text-shadow: 0 0 20px var(--alert-glow), 0 0 40px rgba(251, 191, 36, 0.15);
   }
 
   .section-card.alert-active .section-title {
     color: var(--alert-text);
+    text-shadow: 0 0 15px var(--alert-glow);
   }
 
   @keyframes sectionPulse {
-    0%, 100% { background: var(--alert-bg); }
-    50%      { background: rgba(251, 191, 36, 0.14); }
+    0%, 100% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.08), inset 0 0 0 1px rgba(251, 191, 36, 0.08); }
+    50%      { box-shadow: 0 0 50px rgba(251, 191, 36, 0.18), inset 0 0 0 1px rgba(251, 191, 36, 0.15); }
   }
 
   /* ═══════════════════════════════════════════════════════════
-     WEATHER — HERO CARD (DFW)
+     WEATHER — HERO CARD (DFW) — Glassmorphism
      ═══════════════════════════════════════════════════════════ */
   .weather-hero {
     background: var(--bg-card);
-    border: 0.15vmin solid var(--border-color);
-    border-radius: 1vmin;
-    padding: 2.5vh 2vw;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-color);
+    border-radius: 1.2vmin;
+    padding: 2vh 1.8vw;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 2vw;
+    gap: 1.5vw;
     align-items: center;
+    box-shadow: 0 0 30px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(56, 189, 248, 0.04);
+    animation: cardEntrance 0.8s ease-out 0.25s both;
   }
 
   .hero-icao {
-    font-size: clamp(3rem, 7vmin, 7rem);
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(2.5rem, 6vmin, 6rem);
     font-weight: 800;
     color: var(--accent);
     line-height: 1;
+    text-shadow: 0 0 30px var(--accent-glow), 0 0 60px rgba(56, 189, 248, 0.1);
   }
 
   .hero-airport-name {
-    font-size: clamp(0.6rem, 1.1vmin, 1rem);
+    font-size: clamp(0.5rem, 0.9vmin, 0.85rem);
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.15vw;
@@ -236,59 +399,79 @@
 
   .hero-details {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5vw;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1vw;
   }
 
   .hero-metric {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.4vh;
+    gap: 0.2vh;
   }
 
   .hero-metric-label {
-    font-size: clamp(0.5rem, 0.95vmin, 0.85rem);
+    font-size: clamp(0.4rem, 0.8vmin, 0.7rem);
     text-transform: uppercase;
     letter-spacing: 0.1vw;
     color: var(--text-muted);
   }
 
   .hero-metric-value {
-    font-size: clamp(1.5rem, 4vmin, 4rem);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1.1rem, 3vmin, 3rem);
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1;
   }
 
   .hero-metric-unit {
-    font-size: clamp(0.5rem, 0.9vmin, 0.8rem);
+    font-size: clamp(0.4rem, 0.75vmin, 0.65rem);
     color: var(--text-dim);
   }
 
   .hero-conditions {
     display: flex;
     align-items: center;
-    gap: 0.8vw;
+    gap: 0.6vw;
     margin-top: 0.5vh;
   }
 
   .hero-conditions-badge {
-    font-size: clamp(0.6rem, 1.1vmin, 1rem);
-    padding: 0.4vh 0.8vw;
-    border-radius: 0.6vmin;
-    font-weight: 600;
+    font-size: clamp(0.5rem, 1vmin, 0.9rem);
+    padding: 0.3vh 0.6vw;
+    border-radius: 0.5vmin;
+    font-weight: 700;
     letter-spacing: 0.05vw;
   }
 
+  .hero-wx-icon {
+    font-size: clamp(0.9rem, 1.8vmin, 1.6rem);
+    line-height: 1;
+  }
+
+  .hero-metar-raw {
+    grid-column: 1 / -1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.35rem, 0.65vmin, 0.6rem);
+    color: var(--text-dim);
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.4vh 0.7vw;
+    border-radius: 0.4vmin;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.6vh;
+  }
+
   /* Flight category color classes */
-  .cat-vfr  { background: rgba(52, 211, 153, 0.12); color: #34d399; }
-  .cat-mvfr { background: rgba(96, 165, 250, 0.12); color: #60a5fa; }
-  .cat-ifr  { background: rgba(248, 113, 113, 0.12); color: #f87171; }
-  .cat-lifr { background: rgba(232, 121, 249, 0.12); color: #e879f9; }
+  .cat-vfr  { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.2); }
+  .cat-mvfr { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.2); }
+  .cat-ifr  { background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
+  .cat-lifr { background: rgba(232, 121, 249, 0.12); color: #e879f9; border: 1px solid rgba(232, 121, 249, 0.2); }
 
   .wx-ok    { color: var(--text-muted); }
-  .wx-stale { color: var(--accent-amber); }
+  .wx-stale { color: var(--accent-amber); text-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
 
   /* ═══════════════════════════════════════════════════════════
      WEATHER — SECONDARY AIRPORT GRID
@@ -296,38 +479,66 @@
   .airport-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 14vw), 1fr));
-    gap: 1vh 0.8vw;
+    gap: 0.8vh 0.7vw;
     align-content: start;
     overflow: hidden;
   }
 
   .airport-card {
     background: var(--bg-card-alt);
-    border: 0.1vmin solid var(--border-color);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
     border-radius: 0.8vmin;
-    padding: 1.5vh 1vw;
+    padding: 1.2vh 0.8vw;
     display: flex;
     flex-direction: column;
-    gap: 0.6vh;
+    gap: 0.4vh;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    animation: cardEntrance 0.6s ease-out both;
+  }
+
+  .airport-card:nth-child(1) { animation-delay: 0.30s; }
+  .airport-card:nth-child(2) { animation-delay: 0.37s; }
+  .airport-card:nth-child(3) { animation-delay: 0.44s; }
+  .airport-card:nth-child(4) { animation-delay: 0.51s; }
+  .airport-card:nth-child(5) { animation-delay: 0.58s; }
+  .airport-card:nth-child(6) { animation-delay: 0.65s; }
+  .airport-card:nth-child(7) { animation-delay: 0.72s; }
+
+  .airport-card:hover {
+    border-color: var(--border-glow);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.06);
   }
 
   .airport-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
+  }
+
+  .airport-icao-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.3vw;
   }
 
   .airport-icao {
-    font-size: clamp(1rem, 2.2vmin, 2rem);
-    font-weight: 700;
+    font-size: clamp(0.85rem, 1.9vmin, 1.7rem);
+    font-weight: 800;
     color: var(--accent);
+    text-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+  }
+
+  .airport-wx-icon {
+    font-size: clamp(0.6rem, 1.1vmin, 1rem);
   }
 
   .airport-conditions {
-    font-size: clamp(0.5rem, 0.9vmin, 0.8rem);
-    padding: 0.2vh 0.5vw;
-    border-radius: 0.4vmin;
-    font-weight: 600;
+    font-size: clamp(0.4rem, 0.75vmin, 0.65rem);
+    padding: 0.15vh 0.4vw;
+    border-radius: 0.3vmin;
+    font-weight: 700;
   }
 
   .airport-row {
@@ -337,19 +548,34 @@
   }
 
   .airport-metric-label {
-    font-size: clamp(0.45rem, 0.8vmin, 0.7rem);
+    font-size: clamp(0.35rem, 0.7vmin, 0.6rem);
     color: var(--text-dim);
     text-transform: uppercase;
+    letter-spacing: 0.04vw;
   }
 
   .airport-metric-value {
-    font-size: clamp(0.7rem, 1.4vmin, 1.3rem);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.55rem, 1.1vmin, 1rem);
     font-weight: 600;
     color: var(--text-primary);
   }
 
+  .airport-metar-raw {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.25rem, 0.5vmin, 0.45rem);
+    color: var(--text-dim);
+    opacity: 0.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.15vh;
+    padding-top: 0.25vh;
+    border-top: 1px solid rgba(255,255,255,0.03);
+  }
+
   /* ═══════════════════════════════════════════════════════════
-     BOTTOM BAR — clock
+     BOTTOM BAR — Glassmorphism
      ═══════════════════════════════════════════════════════════ */
   .bottom-bar {
     position: fixed;
@@ -357,8 +583,10 @@
     left: 0;
     width: 100vw;
     height: 3.5vh;
-    background: rgba(10, 14, 23, 0.85);
-    border-top: 0.1vmin solid var(--border-color);
+    background: rgba(6, 10, 20, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(56, 189, 248, 0.06);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -368,15 +596,23 @@
     z-index: 10;
   }
 
+  .bottom-bar-title {
+    letter-spacing: 0.15vw;
+    font-weight: 600;
+  }
+
   .clock {
+    font-family: 'JetBrains Mono', monospace;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
     font-weight: 600;
   }
 </style>
 </head>
-<!-- Inline background prevents white flash on load / hard refresh -->
-<body style="background:#0a0e17">
+<body style="background:#060a14">
+
+<!-- Animated background mesh -->
+<div class="bg-mesh"><div class="bg-orb"></div></div>
 
 <!-- ═══════════════════════════ DASHBOARD GRID ════════════════════════════ -->
 <div class="dashboard">
@@ -388,18 +624,34 @@
     <div class="section-card" id="simba-section">
       <span class="section-label">Execution Countdown</span>
       <span class="section-title">SIMBA</span>
-      <span class="countdown-value" id="simba-countdown">--:--:--</span>
+      <div class="countdown-ring-wrap">
+        <svg class="countdown-ring" viewBox="0 0 200 200">
+          <circle class="ring-track" cx="100" cy="100" r="90"/>
+          <circle class="ring-fill" cx="100" cy="100" r="90" id="simba-ring"
+                  stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
+        </svg>
+        <span class="countdown-value" id="simba-countdown">--:--:--</span>
+      </div>
       <span class="next-label">Next Run: <span id="simba-next">--:--</span></span>
       <div class="pip-row" id="simba-pips"></div>
+      <div class="progress-track"><div class="progress-fill" id="simba-progress"></div></div>
     </div>
 
     <!-- Field Conditions Countdown -->
     <div class="section-card" id="field-section">
       <span class="section-label">Update Countdown</span>
       <span class="section-title">Field Conditions</span>
-      <span class="countdown-value" id="field-countdown">--:--:--</span>
+      <div class="countdown-ring-wrap">
+        <svg class="countdown-ring" viewBox="0 0 200 200">
+          <circle class="ring-track" cx="100" cy="100" r="90"/>
+          <circle class="ring-fill" cx="100" cy="100" r="90" id="field-ring"
+                  stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
+        </svg>
+        <span class="countdown-value" id="field-countdown">--:--:--</span>
+      </div>
       <span class="next-label">Next Update: <span id="field-next">--:--</span></span>
       <div class="pip-row" id="field-pips"></div>
+      <div class="progress-track"><div class="progress-fill" id="field-progress"></div></div>
     </div>
 
   </div>
@@ -410,34 +662,41 @@
     <!-- DFW Hero Card -->
     <div class="weather-hero">
       <div>
-        <div class="hero-icao" id="dfw-icao">DFW</div>
+        <div class="hero-icao">DFW</div>
         <div class="hero-airport-name">Dallas / Fort Worth Intl</div>
-        <div class="hero-conditions" style="margin-top:1vh">
-          <span class="hero-conditions-badge cat-vfr" id="dfw-conditions">VFR</span>
+        <div class="hero-conditions" style="margin-top:0.6vh">
+          <span class="hero-conditions-badge cat-vfr" id="dfw-conditions">--</span>
+          <span class="hero-wx-icon" id="dfw-wx-icon"></span>
         </div>
       </div>
       <div class="hero-details">
         <div class="hero-metric">
           <span class="hero-metric-label">Temp</span>
-          <span class="hero-metric-value" id="dfw-temp">28</span>
-          <span class="hero-metric-unit">°C</span>
+          <span class="hero-metric-value" id="dfw-temp">--</span>
+          <span class="hero-metric-unit">&deg;C</span>
         </div>
         <div class="hero-metric">
           <span class="hero-metric-label">Wind</span>
-          <span class="hero-metric-value"><span id="dfw-wind-dir">210</span>° / <span id="dfw-wind-speed">12</span></span>
+          <span class="hero-metric-value"><span id="dfw-wind-dir">---</span>&deg;/<span id="dfw-wind-speed">--</span></span>
           <span class="hero-metric-unit">kt</span>
         </div>
         <div class="hero-metric">
-          <span class="hero-metric-label">Dewpoint</span>
-          <span class="hero-metric-value" id="dfw-dewpoint">18</span>
-          <span class="hero-metric-unit">°C</span>
+          <span class="hero-metric-label">Dewpt</span>
+          <span class="hero-metric-value" id="dfw-dewpoint">--</span>
+          <span class="hero-metric-unit">&deg;C</span>
         </div>
         <div class="hero-metric">
-          <span class="hero-metric-label">Visibility</span>
-          <span class="hero-metric-value" id="dfw-visibility">10</span>
+          <span class="hero-metric-label">Vis</span>
+          <span class="hero-metric-value" id="dfw-visibility">--</span>
           <span class="hero-metric-unit">SM</span>
         </div>
+        <div class="hero-metric">
+          <span class="hero-metric-label">Alt</span>
+          <span class="hero-metric-value" id="dfw-altimeter">--</span>
+          <span class="hero-metric-unit">inHg</span>
+        </div>
       </div>
+      <div class="hero-metar-raw" id="dfw-metar-raw">Awaiting METAR&hellip;</div>
     </div>
 
     <!-- Secondary Airports Grid -->
@@ -445,72 +704,86 @@
 
       <div class="airport-card" data-icao="CLT">
         <div class="airport-header">
-          <span class="airport-icao">CLT</span>
-          <span class="airport-conditions cat-vfr" id="clt-conditions">VFR</span>
+          <span class="airport-icao-wrap"><span class="airport-icao">CLT</span><span class="airport-wx-icon" id="clt-wx-icon"></span></span>
+          <span class="airport-conditions cat-vfr" id="clt-conditions">--</span>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="clt-temp">24</span>°C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="clt-wind-dir">180</span>° / <span id="clt-wind-speed">8</span> kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="clt-dewpoint">16</span>°C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="clt-temp">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="clt-wind-dir">---</span>&deg;/<span id="clt-wind-speed">--</span>kt</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="clt-dewpoint">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="clt-altimeter">--</span></span></div>
+        <div class="airport-metar-raw" id="clt-metar-raw">--</div>
       </div>
 
       <div class="airport-card" data-icao="ORD">
         <div class="airport-header">
-          <span class="airport-icao">ORD</span>
-          <span class="airport-conditions cat-mvfr" id="ord-conditions">MVFR</span>
+          <span class="airport-icao-wrap"><span class="airport-icao">ORD</span><span class="airport-wx-icon" id="ord-wx-icon"></span></span>
+          <span class="airport-conditions cat-mvfr" id="ord-conditions">--</span>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="ord-temp">14</span>°C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="ord-wind-dir">290</span>° / <span id="ord-wind-speed">18</span> kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="ord-dewpoint">8</span>°C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="ord-temp">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="ord-wind-dir">---</span>&deg;/<span id="ord-wind-speed">--</span>kt</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="ord-dewpoint">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="ord-altimeter">--</span></span></div>
+        <div class="airport-metar-raw" id="ord-metar-raw">--</div>
       </div>
 
       <div class="airport-card" data-icao="MIA">
         <div class="airport-header">
-          <span class="airport-icao">MIA</span>
-          <span class="airport-conditions cat-vfr" id="mia-conditions">VFR</span>
+          <span class="airport-icao-wrap"><span class="airport-icao">MIA</span><span class="airport-wx-icon" id="mia-wx-icon"></span></span>
+          <span class="airport-conditions cat-vfr" id="mia-conditions">--</span>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="mia-temp">31</span>°C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="mia-wind-dir">150</span>° / <span id="mia-wind-speed">10</span> kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="mia-dewpoint">24</span>°C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="mia-temp">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="mia-wind-dir">---</span>&deg;/<span id="mia-wind-speed">--</span>kt</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="mia-dewpoint">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="mia-altimeter">--</span></span></div>
+        <div class="airport-metar-raw" id="mia-metar-raw">--</div>
       </div>
 
       <div class="airport-card" data-icao="LAX">
         <div class="airport-header">
-          <span class="airport-icao">LAX</span>
-          <span class="airport-conditions cat-vfr" id="lax-conditions">VFR</span>
+          <span class="airport-icao-wrap"><span class="airport-icao">LAX</span><span class="airport-wx-icon" id="lax-wx-icon"></span></span>
+          <span class="airport-conditions cat-vfr" id="lax-conditions">--</span>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="lax-temp">22</span>°C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="lax-wind-dir">250</span>° / <span id="lax-wind-speed">6</span> kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="lax-dewpoint">14</span>°C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="lax-temp">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="lax-wind-dir">---</span>&deg;/<span id="lax-wind-speed">--</span>kt</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="lax-dewpoint">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="lax-altimeter">--</span></span></div>
+        <div class="airport-metar-raw" id="lax-metar-raw">--</div>
       </div>
 
       <div class="airport-card" data-icao="JFK">
         <div class="airport-header">
-          <span class="airport-icao">JFK</span>
-          <span class="airport-conditions cat-ifr" id="jfk-conditions">IFR</span>
+          <span class="airport-icao-wrap"><span class="airport-icao">JFK</span><span class="airport-wx-icon" id="jfk-wx-icon"></span></span>
+          <span class="airport-conditions cat-ifr" id="jfk-conditions">--</span>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="jfk-temp">11</span>°C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="jfk-wind-dir">030</span>° / <span id="jfk-wind-speed">22</span> kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="jfk-dewpoint">9</span>°C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="jfk-temp">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="jfk-wind-dir">---</span>&deg;/<span id="jfk-wind-speed">--</span>kt</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="jfk-dewpoint">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="jfk-altimeter">--</span></span></div>
+        <div class="airport-metar-raw" id="jfk-metar-raw">--</div>
       </div>
 
       <div class="airport-card" data-icao="LHR">
         <div class="airport-header">
-          <span class="airport-icao">LHR</span>
-          <span class="airport-conditions cat-mvfr" id="lhr-conditions">MVFR</span>
+          <span class="airport-icao-wrap"><span class="airport-icao">LHR</span><span class="airport-wx-icon" id="lhr-wx-icon"></span></span>
+          <span class="airport-conditions cat-mvfr" id="lhr-conditions">--</span>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="lhr-temp">9</span>°C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="lhr-wind-dir">200</span>° / <span id="lhr-wind-speed">14</span> kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="lhr-dewpoint">6</span>°C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="lhr-temp">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="lhr-wind-dir">---</span>&deg;/<span id="lhr-wind-speed">--</span>kt</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="lhr-dewpoint">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="lhr-altimeter">--</span></span></div>
+        <div class="airport-metar-raw" id="lhr-metar-raw">--</div>
       </div>
 
       <div class="airport-card" data-icao="AKL">
         <div class="airport-header">
-          <span class="airport-icao">AKL</span>
-          <span class="airport-conditions cat-vfr" id="akl-conditions">VFR</span>
+          <span class="airport-icao-wrap"><span class="airport-icao">AKL</span><span class="airport-wx-icon" id="akl-wx-icon"></span></span>
+          <span class="airport-conditions cat-vfr" id="akl-conditions">--</span>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="akl-temp">19</span>°C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="akl-wind-dir">170</span>° / <span id="akl-wind-speed">9</span> kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="akl-dewpoint">13</span>°C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="akl-temp">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="akl-wind-dir">---</span>&deg;/<span id="akl-wind-speed">--</span>kt</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="akl-dewpoint">--</span>&deg;C</span></div>
+        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="akl-altimeter">--</span></span></div>
+        <div class="airport-metar-raw" id="akl-metar-raw">--</div>
       </div>
 
     </div>
@@ -519,13 +792,13 @@
 
 <!-- Bottom bar with live clock -->
 <div class="bottom-bar">
-  <span>OPS COMMAND CENTER</span>
+  <span class="bottom-bar-title">OPS COMMAND CENTER</span>
   <span id="wx-status" class="wx-stale">WX: --</span>
   <span class="clock" id="live-clock">--:--:--</span>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
-     JAVASCRIPT — single setInterval, no memory leaks
+     JAVASCRIPT
      ═══════════════════════════════════════════════════════════ -->
 <script>
 (function () {
@@ -539,33 +812,38 @@
     [6, 0], [12, 0], [14, 30], [18, 0]
   ];
 
-  var ALERT_WINDOW_MS = 5 * 60 * 1000; /* 5 minutes in ms */
+  /* FIXED: Alert fires 10 minutes BEFORE each event only */
+  var ALERT_WINDOW_MS = 10 * 60 * 1000;
 
-  /* ── DOM references (cached once, never recreated) ── */
-  var simbaSection     = document.getElementById('simba-section');
-  var simbaCountdown   = document.getElementById('simba-countdown');
-  var simbaNext        = document.getElementById('simba-next');
-  var simbaPipsRow     = document.getElementById('simba-pips');
+  var RING_CIRCUMFERENCE = 2 * Math.PI * 90; /* ≈ 565.49 */
 
-  var fieldSection     = document.getElementById('field-section');
-  var fieldCountdown   = document.getElementById('field-countdown');
-  var fieldNext        = document.getElementById('field-next');
-  var fieldPipsRow     = document.getElementById('field-pips');
+  /* ── DOM references (cached once) ── */
+  var simbaSection   = document.getElementById('simba-section');
+  var simbaCountdown = document.getElementById('simba-countdown');
+  var simbaNext      = document.getElementById('simba-next');
+  var simbaPipsRow   = document.getElementById('simba-pips');
+  var simbaRing      = document.getElementById('simba-ring');
+  var simbaProgress  = document.getElementById('simba-progress');
 
-  var liveClock        = document.getElementById('live-clock');
+  var fieldSection   = document.getElementById('field-section');
+  var fieldCountdown = document.getElementById('field-countdown');
+  var fieldNext      = document.getElementById('field-next');
+  var fieldPipsRow   = document.getElementById('field-pips');
+  var fieldRing      = document.getElementById('field-ring');
+  var fieldProgress  = document.getElementById('field-progress');
 
-  /* ── Pip indicator elements (created once on init) ── */
+  var liveClock      = document.getElementById('live-clock');
+
   var simbaPipEls = [];
   var fieldPipEls = [];
 
+  /* ── Utility functions ── */
   function pad2(n) { return n < 10 ? '0' + n : '' + n; }
-
-  function formatTimeHHMM(h, m) {
-    return pad2(h) + ':' + pad2(m);
-  }
+  function pad3(n) { return n < 10 ? '00' + n : n < 100 ? '0' + n : '' + n; }
+  function formatTimeHHMM(h, m) { return pad2(h) + ':' + pad2(m); }
 
   function formatCountdown(ms) {
-    if (ms < 0) { ms = 0; }
+    if (ms < 0) ms = 0;
     var totalSec = Math.floor(ms / 1000);
     var h = Math.floor(totalSec / 3600);
     var m = Math.floor((totalSec % 3600) / 60);
@@ -573,36 +851,23 @@
     return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
   }
 
-  /**
-   * Build a Date object for a given [hour, minute] on a given day-base Date.
-   * dayBase is a Date whose year/month/date we copy.
-   */
   function buildTime(dayBase, hm) {
-    var d = new Date(dayBase.getFullYear(), dayBase.getMonth(), dayBase.getDate(), hm[0], hm[1], 0, 0);
-    return d;
+    return new Date(dayBase.getFullYear(), dayBase.getMonth(), dayBase.getDate(), hm[0], hm[1], 0, 0);
   }
 
-  /**
-   * Build pip DOM elements into a container.  Returns an array of
-   * { el: HTMLElement } for each schedule slot.
-   */
   function buildPips(container, schedule) {
     var pips = [];
     for (var i = 0; i < schedule.length; i++) {
       var pip = document.createElement('div');
       pip.className = 'pip upcoming';
-
       var dot = document.createElement('div');
       dot.className = 'pip-dot';
-
       var label = document.createElement('span');
       label.className = 'pip-time';
       label.textContent = formatTimeHHMM(schedule[i][0], schedule[i][1]);
-
       pip.appendChild(dot);
       pip.appendChild(label);
       container.appendChild(pip);
-
       pips.push({ el: pip });
     }
     return pips;
@@ -610,33 +875,34 @@
 
   /**
    * Core update for a countdown section.
-   * - Computes times for today's schedule
-   * - Finds the "active" slot (first slot whose end-of-alert-window is in the future)
-   * - Sets countdown, next-label, pip states, and alert class
+   * FIXED: Alert window is [slotTime - 10min, slotTime).
+   * Slot is completed once now >= slotTime.
+   * Also drives the SVG ring and progress bar.
    */
-  function updateSection(now, schedule, pipEls, sectionEl, countdownEl, nextEl) {
-    var today      = now;
-    var tomorrow   = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-    var nowMs      = now.getTime();
+  function updateSection(now, schedule, pipEls, sectionEl, countdownEl, nextEl, ringEl, progressEl) {
+    var today     = now;
+    var yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+    var tomorrow  = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    var nowMs     = now.getTime();
 
-    /* Determine pip states and find the target slot */
-    var targetTime   = null;
-    var targetIndex  = -1;
-    var isInAlert    = false;
+    var targetTime  = null;
+    var targetIndex = -1;
+    var prevTime    = null;
+    var isInAlert   = false;
 
     for (var i = 0; i < schedule.length; i++) {
       var slotTime   = buildTime(today, schedule[i]);
       var slotMs     = slotTime.getTime();
       var alertStart = slotMs - ALERT_WINDOW_MS;
-      var alertEnd   = slotMs + ALERT_WINDOW_MS;
 
-      if (nowMs > alertEnd) {
-        /* Slot fully passed for today */
+      if (nowMs >= slotMs) {
+        /* Slot time has passed — completed */
         if (pipEls[i].el.className !== 'pip completed') {
           pipEls[i].el.className = 'pip completed';
         }
-      } else if (nowMs >= alertStart && nowMs <= alertEnd) {
-        /* We are inside this slot's alert window */
+        prevTime = slotTime;
+      } else if (nowMs >= alertStart) {
+        /* Within 10-min alert window BEFORE event */
         if (pipEls[i].el.className !== 'pip current') {
           pipEls[i].el.className = 'pip current';
         }
@@ -661,25 +927,46 @@
     if (targetTime === null) {
       targetTime  = buildTime(tomorrow, schedule[0]);
       targetIndex = 0;
+      if (!prevTime) prevTime = buildTime(today, schedule[schedule.length - 1]);
     }
 
-    /* Countdown: difference from now to the target slot time */
+    /* If before first slot today, prev = yesterday's last slot */
+    if (prevTime === null) {
+      prevTime = buildTime(yesterday, schedule[schedule.length - 1]);
+    }
+
+    /* Countdown text */
     var diffMs = targetTime.getTime() - nowMs;
-    /* During alert-after phase (now > target), show 00:00:00 */
-    if (diffMs < 0) { diffMs = 0; }
-
+    if (diffMs < 0) diffMs = 0;
     countdownEl.textContent = formatCountdown(diffMs);
-    nextEl.textContent      = formatTimeHHMM(schedule[targetIndex][0], schedule[targetIndex][1]);
+    nextEl.textContent = formatTimeHHMM(schedule[targetIndex][0], schedule[targetIndex][1]);
 
-    /* Toggle alert class on section */
+    /* Ring progress: fills from 0 (prev event) to 1 (next event) */
+    var intervalMs = targetTime.getTime() - prevTime.getTime();
+    var elapsedMs  = nowMs - prevTime.getTime();
+    var ratio = intervalMs > 0 ? Math.min(Math.max(elapsedMs / intervalMs, 0), 1) : 0;
+    var offset = RING_CIRCUMFERENCE * (1 - ratio);
+    ringEl.style.strokeDashoffset = offset;
+
     if (isInAlert) {
-      if (!sectionEl.classList.contains('alert-active')) {
-        sectionEl.classList.add('alert-active');
-      }
+      if (!ringEl.classList.contains('alert-ring')) ringEl.classList.add('alert-ring');
     } else {
-      if (sectionEl.classList.contains('alert-active')) {
-        sectionEl.classList.remove('alert-active');
-      }
+      if (ringEl.classList.contains('alert-ring')) ringEl.classList.remove('alert-ring');
+    }
+
+    /* Progress bar */
+    progressEl.style.width = (ratio * 100).toFixed(2) + '%';
+    if (isInAlert) {
+      if (!progressEl.classList.contains('alert-progress')) progressEl.classList.add('alert-progress');
+    } else {
+      if (progressEl.classList.contains('alert-progress')) progressEl.classList.remove('alert-progress');
+    }
+
+    /* Section alert class */
+    if (isInAlert) {
+      if (!sectionEl.classList.contains('alert-active')) sectionEl.classList.add('alert-active');
+    } else {
+      if (sectionEl.classList.contains('alert-active')) sectionEl.classList.remove('alert-active');
     }
   }
 
@@ -687,30 +974,49 @@
   simbaPipEls = buildPips(simbaPipsRow, SIMBA_SCHEDULE);
   fieldPipEls = buildPips(fieldPipsRow, FIELD_SCHEDULE);
 
-  /* Weather staleness vars (needed by tick, declared early) */
   var STALE_THRESHOLD_MS = 15 * 60 * 1000;
   var wxStatusEl = document.getElementById('wx-status');
   var lastWxFetchOk = 0;
 
   function tick() {
     var now = new Date();
-
-    /* Update clock */
     liveClock.textContent = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
-
-    /* Update both countdown sections */
-    updateSection(now, SIMBA_SCHEDULE, simbaPipEls, simbaSection, simbaCountdown, simbaNext);
-    updateSection(now, FIELD_SCHEDULE, fieldPipEls, fieldSection, fieldCountdown, fieldNext);
-
-    /* Check weather staleness */
+    updateSection(now, SIMBA_SCHEDULE, simbaPipEls, simbaSection, simbaCountdown, simbaNext, simbaRing, simbaProgress);
+    updateSection(now, FIELD_SCHEDULE, fieldPipEls, fieldSection, fieldCountdown, fieldNext, fieldRing, fieldProgress);
     if (lastWxFetchOk && Date.now() - lastWxFetchOk > STALE_THRESHOLD_MS) {
       wxStatusEl.className = 'wx-stale';
     }
   }
 
-  /* Run immediately, then every second */
   tick();
   setInterval(tick, 1000);
+
+  /* ═══════════════════════════════════════════════════════════
+     WEATHER ICON MAPPING
+     ═══════════════════════════════════════════════════════════ */
+  function getWeatherIcon(wxString, clouds) {
+    var wx = (wxString || '').toUpperCase();
+    if (wx.indexOf('TS') !== -1) return '\u26C8\uFE0F';
+    if (wx.indexOf('SN') !== -1 || wx.indexOf('GR') !== -1 || wx.indexOf('PL') !== -1) return '\u2744\uFE0F';
+    if (wx.indexOf('FZ') !== -1) return '\u2744\uFE0F';
+    if (wx.indexOf('RA') !== -1 || wx.indexOf('DZ') !== -1 || wx.indexOf('SH') !== -1) return '\uD83C\uDF27\uFE0F';
+    if (wx.indexOf('FG') !== -1) return '\uD83C\uDF2B\uFE0F';
+    if (wx.indexOf('BR') !== -1 || wx.indexOf('HZ') !== -1) return '\uD83C\uDF2B\uFE0F';
+    if (clouds && clouds.length > 0) {
+      var maxCover = '';
+      for (var i = 0; i < clouds.length; i++) {
+        var c = (clouds[i].cover || '').toUpperCase();
+        if (c === 'OVC' || c === 'BKN') { maxCover = c; break; }
+        if (c === 'SCT' && maxCover !== 'OVC' && maxCover !== 'BKN') maxCover = c;
+        if (c === 'FEW' && !maxCover) maxCover = c;
+      }
+      if (maxCover === 'OVC') return '\u2601\uFE0F';
+      if (maxCover === 'BKN') return '\uD83C\uDF25\uFE0F';
+      if (maxCover === 'SCT') return '\u26C5';
+      if (maxCover === 'FEW') return '\uD83C\uDF24\uFE0F';
+    }
+    return '\u2600\uFE0F';
+  }
 
   /* ═══════════════════════════════════════════════════════════
      LIVE WEATHER — aviationweather.gov METAR JSON API
@@ -721,20 +1027,15 @@
   };
   var STATION_IDS = Object.keys(STATIONS).map(function (k) { return STATIONS[k]; }).join(',');
   var AWX_URL = 'https://aviationweather.gov/api/data/metar?ids=' + STATION_IDS + '&format=json&taf=false&hours=1.5';
-  /* CORS proxy required — aviationweather.gov does not send Access-Control-Allow-Origin.
-     Replace with your own proxy (e.g. Cloudflare Worker) for better reliability. */
   var CORS_PROXY = 'https://corsproxy.io/?url=';
   var WEATHER_URL = CORS_PROXY + encodeURIComponent(AWX_URL);
   var WEATHER_POLL_MS = 5 * 60 * 1000;
 
-  /* Map ICAO → key for DOM lookup */
   var icaoToKey = {};
   var keys = Object.keys(STATIONS);
   for (var k = 0; k < keys.length; k++) {
     icaoToKey[STATIONS[keys[k]]] = keys[k];
   }
-
-  function pad3(n) { return n < 10 ? '00' + n : n < 100 ? '0' + n : '' + n; }
 
   function applyWeather(latest) {
     var icaos = Object.keys(latest);
@@ -748,16 +1049,36 @@
       var wdEl   = document.getElementById(key + '-wind-dir');
       var dpEl   = document.getElementById(key + '-dewpoint');
       var cEl    = document.getElementById(key + '-conditions');
+      var altEl  = document.getElementById(key + '-altimeter');
+      var rawEl  = document.getElementById(key + '-metar-raw');
+      var wxEl   = document.getElementById(key + '-wx-icon');
 
-      if (tempEl) tempEl.textContent = Math.round(d.temp);
-      if (dpEl)   dpEl.textContent   = Math.round(d.dewp);
-      if (wdEl)   wdEl.textContent   = pad3(d.wdir);
-      if (wsEl)   wsEl.textContent   = d.wgst ? d.wspd + 'G' + d.wgst : '' + d.wspd;
+      if (tempEl && d.temp != null) tempEl.textContent = Math.round(d.temp);
+      if (dpEl && d.dewp != null)   dpEl.textContent   = Math.round(d.dewp);
+      if (wdEl && d.wdir != null)   wdEl.textContent   = pad3(d.wdir);
+      if (wsEl && d.wspd != null)   wsEl.textContent   = d.wgst ? d.wspd + 'G' + d.wgst : '' + d.wspd;
 
-      /* Visibility — DFW hero only */
+      /* Altimeter: API returns hPa, convert to inHg */
+      if (altEl && d.altim != null) {
+        var inHg = d.altim * 0.02953;
+        altEl.textContent = inHg.toFixed(2);
+      }
+
+      /* Raw METAR */
+      if (rawEl && d.rawOb) {
+        rawEl.textContent = d.rawOb;
+        rawEl.title = d.rawOb;
+      }
+
+      /* Weather icon */
+      if (wxEl) {
+        wxEl.textContent = getWeatherIcon(d.wxString, d.clouds);
+      }
+
+      /* Visibility — DFW hero */
       if (key === 'dfw') {
         var visEl = document.getElementById('dfw-visibility');
-        if (visEl) visEl.textContent = typeof d.visib === 'number' ? d.visib : d.visib;
+        if (visEl && d.visib != null) visEl.textContent = d.visib;
       }
 
       /* Flight category badge */
@@ -765,7 +1086,6 @@
         var cat = d.fltCat.toUpperCase();
         cEl.textContent = cat;
         var catClass = 'cat-' + cat.toLowerCase();
-        /* Hero card uses hero-conditions-badge, secondary uses airport-conditions */
         if (key === 'dfw') {
           cEl.className = 'hero-conditions-badge ' + catClass;
         } else {
@@ -780,7 +1100,6 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     }).then(function (arr) {
-      /* Deduplicate — keep most recent obs per icaoId */
       var latest = {};
       for (var i = 0; i < arr.length; i++) {
         var ob = arr[i];
