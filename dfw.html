@@ -753,6 +753,11 @@
     const WX_BASE       = 'https://aviationweather.gov/api/data/metar';
     const TAF_BASE      = 'https://aviationweather.gov/api/data/taf';
     const POLL_MS       = 5 * 60 * 1000;
+    const FETCH_TIMEOUT = 30000;
+    const MAX_ERRORS    = 10;
+    const AUTO_RELOAD_MS = 12 * 60 * 60 * 1000;
+    const pageLoadTime  = Date.now();
+    let consecutiveErrors = 0;
 
     const $ = id => document.getElementById(id);
 
@@ -1060,16 +1065,22 @@
     async function fetchMetar() {
       const url = WX_PROXY + encodeURIComponent(WX_BASE + '?ids=' + STATION + '&format=json&hours=1');
       try {
-        const res = await fetch(url);
+        const ctrl = new AbortController();
+        const tmr = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(tmr);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           applyMetar(data[0]);
           $('status-dot').classList.remove('error');
+          consecutiveErrors = 0;
         }
       } catch (e) {
         console.error('METAR fetch error:', e);
         $('status-dot').classList.add('error');
+        consecutiveErrors++;
+        if (consecutiveErrors >= MAX_ERRORS) location.reload();
       }
     }
 
@@ -1077,7 +1088,10 @@
     async function fetchTaf() {
       const url = WX_PROXY + encodeURIComponent(TAF_BASE + '?ids=' + STATION + '&format=json');
       try {
-        const res = await fetch(url);
+        const ctrl = new AbortController();
+        const tmr = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(tmr);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         applyTaf(data);
@@ -1096,6 +1110,23 @@
     init();
     setInterval(fetchMetar, POLL_MS);
     setInterval(fetchTaf, POLL_MS);
+
+    // ── Unattended stability ──
+    setInterval(function() {
+      if (Date.now() - pageLoadTime >= AUTO_RELOAD_MS) location.reload();
+    }, 60000);
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) { fetchMetar(); fetchTaf(); }
+    });
+    window.addEventListener('error', function(e) {
+      console.error('Uncaught:', e.message);
+      window.__errCount = (window.__errCount || 0) + 1;
+      if (window.__errCount >= 3) setTimeout(function() { location.reload(); }, 5000);
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Unhandled rejection:', e.reason);
+      e.preventDefault();
+    });
   </script>
 </body>
 </html>
