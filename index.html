@@ -8,15 +8,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  /* ═══════════════════════════════════════════════════════════
-     CSS CUSTOM PROPERTIES
-     ═══════════════════════════════════════════════════════════ */
   :root {
     --bg-primary:    #060a14;
-    --bg-card:       rgba(15, 23, 42, 0.6);
+    --bg-card:       rgba(15, 23, 42, 0.65);
     --bg-card-alt:   rgba(22, 33, 55, 0.55);
+    --bg-card-hover: rgba(30, 42, 66, 0.7);
     --border-color:  rgba(56, 189, 248, 0.08);
-    --border-glow:   rgba(56, 189, 248, 0.18);
+    --border-glow:   rgba(56, 189, 248, 0.22);
     --text-primary:  #e2e8f0;
     --text-muted:    #64748b;
     --text-dim:      #475569;
@@ -25,6 +23,7 @@
     --accent-green:  #34d399;
     --accent-amber:  #fbbf24;
     --accent-red:    #f87171;
+    --accent-purple: #a78bfa;
     --alert-bg:      rgba(251, 191, 36, 0.06);
     --alert-border:  rgba(251, 191, 36, 0.4);
     --alert-text:    #fbbf24;
@@ -32,13 +31,13 @@
     --completed-dot: #34d399;
     --upcoming-dot:  rgba(30, 41, 59, 0.6);
     --glass-blur:    blur(20px);
-    --ring-size:     clamp(10rem, 22vmin, 22rem);
+    --ring-size:     clamp(9rem, 20vmin, 20rem);
+    --bar-height:    3.2vh;
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     RESET & BASE
-     ═══════════════════════════════════════════════════════════ */
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  *, *::before, *::after {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
 
   html, body {
     width: 100vw;
@@ -49,1083 +48,1539 @@
     color: var(--text-primary);
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     ANIMATED BACKGROUND MESH
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Animated Background ── */
   .bg-mesh {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    overflow: hidden;
-    pointer-events: none;
+    position: fixed; inset: 0; z-index: 0;
+    overflow: hidden; pointer-events: none;
   }
-  .bg-mesh::before,
-  .bg-mesh::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-    opacity: 0.3;
+  .bg-mesh::before, .bg-mesh::after {
+    content: ''; position: absolute;
+    border-radius: 50%; filter: blur(120px); opacity: 0.25;
   }
   .bg-mesh::before {
-    width: 50vw; height: 50vw;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.4), transparent 70%);
-    top: -15%; left: -10%;
-    animation: meshFloat1 25s ease-in-out infinite alternate;
+    width: 55vw; height: 55vw;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.45), transparent 70%);
+    top: -20%; left: -12%;
+    animation: mf1 25s ease-in-out infinite alternate;
   }
   .bg-mesh::after {
-    width: 40vw; height: 40vw;
-    background: radial-gradient(circle, rgba(14, 165, 233, 0.35), transparent 70%);
-    bottom: -15%; right: -5%;
-    animation: meshFloat2 30s ease-in-out infinite alternate;
+    width: 45vw; height: 45vw;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.38), transparent 70%);
+    bottom: -18%; right: -8%;
+    animation: mf2 30s ease-in-out infinite alternate;
   }
   .bg-orb {
-    position: absolute;
-    width: 35vw; height: 35vw;
-    border-radius: 50%;
+    position: absolute; width: 38vw; height: 38vw;
+    border-radius: 50%; filter: blur(120px); opacity: 0.2;
     background: radial-gradient(circle, rgba(52, 211, 153, 0.2), transparent 70%);
-    filter: blur(100px);
-    opacity: 0.25;
-    top: 60%; left: 35%;
-    animation: meshFloat3 22s ease-in-out infinite alternate;
+    top: 55%; left: 30%;
+    animation: mf3 22s ease-in-out infinite alternate;
   }
-  @keyframes meshFloat1 {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(3vw, 5vh) scale(1.15); }
+  .bg-orb2 {
+    position: absolute; width: 30vw; height: 30vw;
+    border-radius: 50%; filter: blur(120px); opacity: 0.18;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.12), transparent 70%);
+    top: 10%; right: 20%;
+    animation: mf4 28s ease-in-out infinite alternate;
   }
-  @keyframes meshFloat2 {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(-4vw, -3vh) scale(1.1); }
-  }
-  @keyframes meshFloat3 {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(5vw, -4vh) scale(0.9); }
+  @keyframes mf1 { from { transform: translate(0,0) scale(1) } to { transform: translate(4vw, 6vh) scale(1.18) } }
+  @keyframes mf2 { from { transform: translate(0,0) scale(1) } to { transform: translate(-5vw,-4vh) scale(1.12) } }
+  @keyframes mf3 { from { transform: translate(0,0) scale(1) } to { transform: translate(6vw,-5vh) scale(0.88) } }
+  @keyframes mf4 { from { transform: translate(0,0) scale(1) } to { transform: translate(-3vw, 4vh) scale(1.08) } }
+
+  /* ── Scanlines Overlay ── */
+  .scanlines {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+    );
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     MAIN GRID
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Main Layout ── */
   .dashboard {
-    position: relative;
-    z-index: 1;
+    position: relative; z-index: 1;
     display: grid;
-    grid-template-columns: 36vw 1fr;
-    grid-template-rows: 100vh;
+    grid-template-columns: 33vw 1fr;
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - var(--bar-height));
   }
 
+  /* ── Left Panel ── */
   .left-panel {
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-    gap: 1.2vh;
-    padding: 1.5vh 1.2vw;
-    border-right: 1px solid rgba(56, 189, 248, 0.05);
+    display: grid; grid-template-rows: 1fr 1fr;
+    gap: 1vh; padding: 1.2vh 1vw;
+    position: relative;
+  }
+  .left-panel::after {
+    content: ''; position: absolute;
+    top: 5%; right: 0; bottom: 5%; width: 1px;
+    background: linear-gradient(180deg, transparent, var(--accent-glow), transparent);
   }
 
+  /* ── Right Panel ── */
   .right-panel {
     display: grid;
     grid-template-rows: auto 1fr;
-    padding: 1.5vh 1.2vw 1.5vh 0;
-    gap: 1.2vh;
+    padding: 1.2vh 1vw;
+    gap: 0.8vh;
+    overflow: hidden;
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     SECTION CARD — Glassmorphism
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Section Cards (Countdown) ── */
   .section-card {
     background: var(--bg-card);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border-color);
     border-radius: 1.2vmin;
-    padding: 2vh 1.5vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
+    padding: 1.5vh 1.2vw;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    position: relative; overflow: hidden;
     transition: background 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
-    box-shadow: 0 0 30px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(56, 189, 248, 0.04);
-    animation: cardEntrance 0.8s ease-out both;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(56, 189, 248, 0.04);
+    animation: cardIn 0.8s ease-out both;
   }
   .section-card:nth-child(2) { animation-delay: 0.15s; }
 
-  @keyframes cardEntrance {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     SECTION HEADER
-     ═══════════════════════════════════════════════════════════ */
   .section-label {
-    font-size: clamp(0.6rem, 0.95vmin, 1rem);
-    text-transform: uppercase;
-    letter-spacing: 0.3vw;
-    color: var(--text-muted);
-    margin-bottom: 0.4vh;
-    font-weight: 600;
+    font-size: clamp(1rem, 1.8vmin, 1.8rem);
+    text-transform: uppercase; letter-spacing: 0.35vw;
+    color: var(--text-muted); margin-bottom: 0.2vh; font-weight: 600;
   }
-
   .section-title {
-    font-size: clamp(1.1rem, 2.6vmin, 2.4rem);
-    font-weight: 800;
-    color: var(--accent);
-    margin-bottom: 0.2vh;
-    text-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(56, 189, 248, 0.08);
+    font-size: clamp(2rem, 4vmin, 4rem);
+    font-weight: 800; color: var(--accent); margin-bottom: 0.1vh;
+    text-shadow: 0 0 25px var(--accent-glow), 0 0 50px rgba(56, 189, 248, 0.1);
+    letter-spacing: 0.05vw;
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     COUNTDOWN RING + VALUE
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Countdown Ring ── */
   .countdown-ring-wrap {
     position: relative;
-    width: var(--ring-size);
-    height: var(--ring-size);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0.8vh 0;
+    width: var(--ring-size); height: var(--ring-size);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0.4vh 0;
   }
-
   .countdown-ring {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
     transform: rotate(-90deg);
   }
-
-  .ring-track {
-    fill: none;
-    stroke: rgba(56, 189, 248, 0.06);
-    stroke-width: 3.5;
-  }
-
-  .ring-fill {
-    fill: none;
-    stroke: var(--accent);
-    stroke-width: 3.5;
+  .ring-track  { fill: none; stroke: rgba(56, 189, 248, 0.06); stroke-width: 3; }
+  .ring-fill   {
+    fill: none; stroke: var(--accent); stroke-width: 3.5;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear, stroke 0.6s ease;
-    filter: drop-shadow(0 0 6px var(--accent-glow));
+    filter: drop-shadow(0 0 8px var(--accent-glow));
   }
-
-  .ring-fill.alert-ring {
+  .ring-glow   {
+    fill: none; stroke: var(--accent); stroke-width: 7;
+    stroke-linecap: round; opacity: 0.12;
+    transition: stroke-dashoffset 1s linear, stroke 0.6s ease;
+    filter: blur(4px);
+  }
+  .ring-fill.alert-ring, .ring-glow.alert-ring {
     stroke: var(--accent-amber);
-    filter: drop-shadow(0 0 8px var(--alert-glow));
+    filter: drop-shadow(0 0 10px var(--alert-glow));
   }
 
   .countdown-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(2rem, 6.5vmin, 6.5rem);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.15vw;
-    line-height: 1;
-    color: var(--text-primary);
-    z-index: 1;
+    font-size: clamp(3.5rem, 9vmin, 9rem);
+    font-weight: 700; font-variant-numeric: tabular-nums;
+    letter-spacing: 0.1vw; line-height: 1;
+    color: var(--text-primary); z-index: 1;
     transition: color 0.6s ease, text-shadow 0.6s ease;
   }
 
   .next-label {
-    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
-    color: var(--text-muted);
-    margin-bottom: 1.2vh;
+    font-size: clamp(1rem, 2vmin, 2rem);
+    color: var(--text-muted); margin-bottom: 0.8vh;
   }
+  .next-label span { color: var(--accent); font-weight: 700; }
 
-  .next-label span {
-    color: var(--accent);
-    font-weight: 700;
-  }
-
-  /* ═══════════════════════════════════════════════════════════
-     PROGRESS BAR
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Progress Bar ── */
   .progress-track {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 0 0 1.2vmin 1.2vmin;
-    overflow: hidden;
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 0 0 1.2vmin 1.2vmin; overflow: hidden;
   }
-
   .progress-fill {
-    height: 100%;
-    width: 0%;
+    height: 100%; width: 0%;
     background: linear-gradient(90deg, var(--accent), var(--accent-green));
     border-radius: 0 2px 2px 0;
     transition: width 1s linear, background 0.6s ease;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
   }
-
   .progress-fill.alert-progress {
     background: linear-gradient(90deg, var(--accent-amber), var(--accent-red));
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     PIP / DOT INDICATORS + TIMELINE
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Timeline Pips ── */
   .pip-row {
-    display: flex;
-    gap: 1.2vw;
-    align-items: flex-start;
-    margin-top: 0.6vh;
+    display: flex; gap: 1vw;
+    align-items: flex-start; margin-top: 0.4vh;
     position: relative;
   }
-
   .pip-row::before {
-    content: '';
-    position: absolute;
-    top: calc(clamp(0.3rem, 0.7vmin, 0.65rem));
-    left: calc(clamp(0.3rem, 0.7vmin, 0.65rem));
-    right: calc(clamp(0.3rem, 0.7vmin, 0.65rem));
-    height: 1px;
+    content: ''; position: absolute;
+    top: calc(clamp(0.3rem, 0.65vmin, 0.6rem));
+    left: calc(clamp(0.3rem, 0.65vmin, 0.6rem));
+    right: calc(clamp(0.3rem, 0.65vmin, 0.6rem));
+    height: 2px;
     background: linear-gradient(90deg,
-      var(--completed-dot) 0%,
-      var(--text-dim) 50%,
-      var(--upcoming-dot) 100%);
-    z-index: 0;
-    opacity: 0.4;
+      rgba(52,211,153,0.4) 0%,
+      rgba(71,85,105,0.3) 50%,
+      rgba(30,41,59,0.2) 100%);
+    z-index: 0; border-radius: 1px;
   }
-
   .pip {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4vh;
-    z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.3vh; z-index: 1;
   }
-
   .pip-dot {
-    width: clamp(0.6rem, 1.4vmin, 1.3rem);
-    height: clamp(0.6rem, 1.4vmin, 1.3rem);
+    width: clamp(0.5rem, 1.2vmin, 1.1rem);
+    height: clamp(0.5rem, 1.2vmin, 1.1rem);
     border-radius: 50%;
     background: var(--upcoming-dot);
     border: 2px solid var(--text-dim);
     transition: all 0.4s ease;
   }
-
   .pip-time {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(0.4rem, 0.8vmin, 0.7rem);
-    color: var(--text-dim);
-    font-variant-numeric: tabular-nums;
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
+    color: var(--text-dim); font-variant-numeric: tabular-nums;
   }
-
   .pip.completed .pip-dot {
-    background: var(--completed-dot);
-    border-color: var(--completed-dot);
-    box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
+    background: var(--completed-dot); border-color: var(--completed-dot);
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
   }
   .pip.completed .pip-time { color: var(--completed-dot); }
-
   .pip.current .pip-dot {
-    background: var(--accent-amber);
-    border-color: var(--accent-amber);
-    box-shadow: 0 0 8px var(--accent-amber), 0 0 16px rgba(251, 191, 36, 0.3);
+    background: var(--accent-amber); border-color: var(--accent-amber);
+    box-shadow: 0 0 8px var(--accent-amber), 0 0 18px rgba(251,191,36,0.35);
     animation: pipPulse 1.5s ease-in-out infinite;
   }
   .pip.current .pip-time { color: var(--accent-amber); font-weight: 700; }
 
   @keyframes pipPulse {
-    0%, 100% { box-shadow: 0 0 4px rgba(251,191,36,0.4), 0 0 10px rgba(251,191,36,0.15); }
-    50%      { box-shadow: 0 0 10px rgba(251,191,36,0.8), 0 0 20px rgba(251,191,36,0.3); }
+    0%, 100% { box-shadow: 0 0 5px rgba(251,191,36,0.4), 0 0 12px rgba(251,191,36,0.15); }
+    50%      { box-shadow: 0 0 12px rgba(251,191,36,0.9), 0 0 24px rgba(251,191,36,0.35); }
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     ALERT STATE — Enhanced
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Alert State ── */
   .section-card.alert-active {
     background: var(--alert-bg);
     border-color: var(--alert-border);
-    box-shadow: 0 0 40px rgba(251, 191, 36, 0.1), inset 0 0 0 1px rgba(251, 191, 36, 0.1);
-    animation: sectionPulse 2s ease-in-out infinite;
+    box-shadow: 0 0 50px rgba(251,191,36,0.1), inset 0 0 0 1px rgba(251,191,36,0.12);
+    animation: secPulse 2s ease-in-out infinite;
   }
-
   .section-card.alert-active .countdown-value {
     color: var(--alert-text);
-    text-shadow: 0 0 20px var(--alert-glow), 0 0 40px rgba(251, 191, 36, 0.15);
+    text-shadow: 0 0 25px var(--alert-glow), 0 0 50px rgba(251,191,36,0.15);
   }
-
   .section-card.alert-active .section-title {
     color: var(--alert-text);
-    text-shadow: 0 0 15px var(--alert-glow);
+    text-shadow: 0 0 20px var(--alert-glow);
+  }
+  @keyframes secPulse {
+    0%, 100% { box-shadow: 0 0 35px rgba(251,191,36,0.08), inset 0 0 0 1px rgba(251,191,36,0.08); }
+    50%      { box-shadow: 0 0 60px rgba(251,191,36,0.2), inset 0 0 0 1px rgba(251,191,36,0.18); }
   }
 
-  @keyframes sectionPulse {
-    0%, 100% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.08), inset 0 0 0 1px rgba(251, 191, 36, 0.08); }
-    50%      { box-shadow: 0 0 50px rgba(251, 191, 36, 0.18), inset 0 0 0 1px rgba(251, 191, 36, 0.15); }
+  /* ── Weather Panel Header ── */
+  .wx-panel-header {
+    display: flex; align-items: center;
+    justify-content: space-between; padding: 0 0.3vw;
+  }
+  .wx-panel-title {
+    font-size: clamp(1rem, 1.8vmin, 1.7rem);
+    text-transform: uppercase; letter-spacing: 0.3vw;
+    color: var(--text-muted); font-weight: 700;
+  }
+  .wx-panel-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.8rem, 1.4vmin, 1.3rem);
+    color: var(--text-dim);
+    padding: 0.2vh 0.5vw;
+    background: rgba(255,255,255,0.03);
+    border-radius: 0.3vmin;
+    border: 1px solid rgba(255,255,255,0.04);
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     WEATHER — HERO CARD (DFW) — Glassmorphism
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Weather Content ── */
+  .wx-content {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 0.8vh;
+    overflow: hidden;
+  }
+
+  /* ── DFW Hero Card ── */
   .weather-hero {
     background: var(--bg-card);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border-color);
-    border-radius: 1.2vmin;
-    padding: 2vh 1.8vw;
+    border-radius: 1vmin;
+    padding: 1.8vh 1.5vw;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 1.5vw;
+    grid-template-rows: 1fr auto;
+    gap: 0.5vh 1.5vw;
     align-items: center;
-    box-shadow: 0 0 30px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(56, 189, 248, 0.04);
-    animation: cardEntrance 0.8s ease-out 0.25s both;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(56,189,248,0.05);
+    animation: cardIn 0.8s ease-out 0.2s both;
+    position: relative; overflow: hidden;
+  }
+  .weather-hero::before {
+    content: ''; position: absolute; top: -1px; left: -1px;
+    width: 50px; height: 50px;
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+    border-radius: 1vmin 0 0 0; opacity: 0.3;
+  }
+  .weather-hero::after {
+    content: ''; position: absolute; bottom: -1px; right: -1px;
+    width: 50px; height: 50px;
+    border-bottom: 2px solid var(--accent);
+    border-right: 2px solid var(--accent);
+    border-radius: 0 0 1vmin 0; opacity: 0.3;
   }
 
+  .hero-left {
+    grid-row: 1 / 2;
+    display: flex; flex-direction: column;
+    align-items: flex-start;
+  }
   .hero-icao {
     font-family: 'Inter', sans-serif;
-    font-size: clamp(2.5rem, 6vmin, 6rem);
-    font-weight: 800;
-    color: var(--accent);
-    line-height: 1;
-    text-shadow: 0 0 30px var(--accent-glow), 0 0 60px rgba(56, 189, 248, 0.1);
+    font-size: clamp(4rem, 8.5vmin, 8.5rem);
+    font-weight: 800; color: var(--accent); line-height: 1;
+    text-shadow: 0 0 35px var(--accent-glow), 0 0 70px rgba(56,189,248,0.12);
   }
-
   .hero-airport-name {
-    font-size: clamp(0.5rem, 0.9vmin, 0.85rem);
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.15vw;
-    margin-top: 0.3vh;
+    font-size: clamp(0.9rem, 1.6vmin, 1.5rem);
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.15vw; margin-top: 0.2vh;
+  }
+  .hero-conditions {
+    display: flex; align-items: center;
+    gap: 0.5vw; margin-top: 0.5vh;
+  }
+  .hero-conditions-badge {
+    font-size: clamp(1rem, 1.8vmin, 1.7rem);
+    padding: 0.3vh 0.6vw; border-radius: 0.4vmin;
+    font-weight: 700; letter-spacing: 0.05vw;
+  }
+  .hero-wx-icon {
+    font-size: clamp(2.5rem, 4.5vmin, 4.5rem);
+    line-height: 1;
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.15));
+  }
+  .hero-obs-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
+    color: var(--text-dim); margin-top: 0.3vh;
   }
 
   .hero-details {
+    grid-row: 1 / 2;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1vw;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6vw 1vw;
+    align-self: center;
   }
-
   .hero-metric {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.2vh;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.1vh;
+    padding: 0.5vh 0.3vw;
+    border-radius: 0.4vmin;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.02);
   }
-
   .hero-metric-label {
-    font-size: clamp(0.4rem, 0.8vmin, 0.7rem);
-    text-transform: uppercase;
-    letter-spacing: 0.1vw;
+    font-size: clamp(0.75rem, 1.3vmin, 1.2rem);
+    text-transform: uppercase; letter-spacing: 0.1vw;
     color: var(--text-muted);
   }
-
   .hero-metric-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(1.1rem, 3vmin, 3rem);
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1;
+    font-size: clamp(1.8rem, 3.8vmin, 3.8rem);
+    font-weight: 700; color: var(--text-primary); line-height: 1;
   }
-
   .hero-metric-unit {
-    font-size: clamp(0.4rem, 0.75vmin, 0.65rem);
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
     color: var(--text-dim);
-  }
-
-  .hero-conditions {
-    display: flex;
-    align-items: center;
-    gap: 0.6vw;
-    margin-top: 0.5vh;
-  }
-
-  .hero-conditions-badge {
-    font-size: clamp(0.5rem, 1vmin, 0.9rem);
-    padding: 0.3vh 0.6vw;
-    border-radius: 0.5vmin;
-    font-weight: 700;
-    letter-spacing: 0.05vw;
-  }
-
-  .hero-wx-icon {
-    font-size: clamp(0.9rem, 1.8vmin, 1.6rem);
-    line-height: 1;
   }
 
   .hero-metar-raw {
     grid-column: 1 / -1;
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(0.35rem, 0.65vmin, 0.6rem);
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
     color: var(--text-dim);
-    background: rgba(0, 0, 0, 0.25);
-    padding: 0.4vh 0.7vw;
-    border-radius: 0.4vmin;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-top: 0.6vh;
+    background: rgba(0,0,0,0.3);
+    padding: 0.5vh 0.6vw;
+    border-radius: 0.3vmin;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border: 1px solid rgba(255,255,255,0.03);
   }
 
-  /* Flight category color classes */
-  .cat-vfr  { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.2); }
-  .cat-mvfr { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.2); }
-  .cat-ifr  { background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
-  .cat-lifr { background: rgba(232, 121, 249, 0.12); color: #e879f9; border: 1px solid rgba(232, 121, 249, 0.2); }
-
+  /* ── Flight Category Badges ── */
+  .cat-vfr  { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+  .cat-mvfr { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+  .cat-ifr  { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+  .cat-lifr { background: rgba(232,121,249,0.12); color: #e879f9; border: 1px solid rgba(232,121,249,0.2); }
   .wx-ok    { color: var(--text-muted); }
-  .wx-stale { color: var(--accent-amber); text-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
+  .wx-stale { color: var(--accent-amber); text-shadow: 0 0 8px rgba(251,191,36,0.3); }
 
-  /* ═══════════════════════════════════════════════════════════
-     WEATHER — SECONDARY AIRPORT GRID
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Airport Grid ── */
   .airport-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14vw), 1fr));
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 1fr;
     gap: 0.8vh 0.7vw;
-    align-content: start;
     overflow: hidden;
   }
+  /* Row 1: 4 cards × 3 cols each = 12 */
+  .airport-card:nth-child(-n+4) { grid-column: span 3; }
+  /* Row 2: 3 cards × 4 cols each = 12 */
+  .airport-card:nth-child(n+5)  { grid-column: span 4; }
 
   .airport-card {
     background: var(--bg-card-alt);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border: 1px solid var(--border-color);
     border-radius: 0.8vmin;
-    padding: 1.2vh 0.8vw;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4vh;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    animation: cardEntrance 0.6s ease-out both;
+    padding: 1.2vh 1vw;
+    display: flex; flex-direction: column; gap: 0.4vh;
+    transition: all 0.3s ease;
+    animation: cardIn 0.6s ease-out both;
+    position: relative;
   }
-
-  .airport-card:nth-child(1) { animation-delay: 0.30s; }
-  .airport-card:nth-child(2) { animation-delay: 0.37s; }
-  .airport-card:nth-child(3) { animation-delay: 0.44s; }
-  .airport-card:nth-child(4) { animation-delay: 0.51s; }
-  .airport-card:nth-child(5) { animation-delay: 0.58s; }
-  .airport-card:nth-child(6) { animation-delay: 0.65s; }
-  .airport-card:nth-child(7) { animation-delay: 0.72s; }
-
+  .airport-card:nth-child(1) { animation-delay: .25s; }
+  .airport-card:nth-child(2) { animation-delay: .30s; }
+  .airport-card:nth-child(3) { animation-delay: .35s; }
+  .airport-card:nth-child(4) { animation-delay: .40s; }
+  .airport-card:nth-child(5) { animation-delay: .45s; }
+  .airport-card:nth-child(6) { animation-delay: .50s; }
+  .airport-card:nth-child(7) { animation-delay: .55s; }
   .airport-card:hover {
+    background: var(--bg-card-hover);
     border-color: var(--border-glow);
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.06);
+    box-shadow: 0 0 25px rgba(56,189,248,0.06);
+    transform: translateY(-1px);
+  }
+  body.no-hover .airport-card:hover {
+    background: var(--bg-card-alt);
+    border-color: var(--border-color);
+    box-shadow: none;
+    transform: none;
   }
 
   .airport-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 0.1vh;
   }
-
   .airport-icao-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.3vw;
+    display: flex; align-items: center; gap: 0.3vw;
   }
-
   .airport-icao {
-    font-size: clamp(0.85rem, 1.9vmin, 1.7rem);
-    font-weight: 800;
-    color: var(--accent);
-    text-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    font-size: clamp(1.8rem, 3.5vmin, 3.5rem);
+    font-weight: 800; color: var(--accent);
+    text-shadow: 0 0 14px rgba(56,189,248,0.25);
   }
-
   .airport-wx-icon {
+    font-size: clamp(1.1rem, 2.2vmin, 2.1rem);
+  }
+  .airport-name {
     font-size: clamp(0.6rem, 1.1vmin, 1rem);
+    color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.05vw; margin-bottom: 0.2vh;
   }
-
   .airport-conditions {
-    font-size: clamp(0.4rem, 0.75vmin, 0.65rem);
-    padding: 0.15vh 0.4vw;
-    border-radius: 0.3vmin;
-    font-weight: 700;
+    font-size: clamp(0.8rem, 1.5vmin, 1.4rem);
+    padding: 0.2vh 0.45vw; border-radius: 0.3vmin; font-weight: 700;
   }
 
-  .airport-row {
-    display: flex;
-    justify-content: space-between;
+  .airport-metrics {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.3vh 0.6vw;
+  }
+  .airport-metric {
+    display: flex; justify-content: space-between;
     align-items: baseline;
   }
-
   .airport-metric-label {
-    font-size: clamp(0.35rem, 0.7vmin, 0.6rem);
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.04vw;
+    font-size: clamp(0.65rem, 1.2vmin, 1.1rem);
+    color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.03vw;
   }
-
   .airport-metric-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(0.55rem, 1.1vmin, 1rem);
-    font-weight: 600;
-    color: var(--text-primary);
+    font-size: clamp(1.1rem, 2.2vmin, 2.1rem);
+    font-weight: 600; color: var(--text-primary);
   }
 
   .airport-metar-raw {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(0.25rem, 0.5vmin, 0.45rem);
-    color: var(--text-dim);
-    opacity: 0.5;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-top: 0.15vh;
-    padding-top: 0.25vh;
+    font-size: clamp(0.55rem, 1vmin, 0.95rem);
+    color: var(--text-dim); opacity: 0.5;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: auto; padding-top: 0.3vh;
     border-top: 1px solid rgba(255,255,255,0.03);
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     BOTTOM BAR — Glassmorphism
-     ═══════════════════════════════════════════════════════════ */
+  /* ── Bottom Bar ── */
   .bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100vw;
-    height: 3.5vh;
-    background: rgba(6, 10, 20, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(56, 189, 248, 0.06);
-    display: flex;
-    justify-content: space-between;
+    position: fixed; bottom: 0; left: 0;
+    width: 100vw; height: var(--bar-height);
+    background: rgba(6,10,20,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(56,189,248,0.08);
+    display: flex; justify-content: space-between;
     align-items: center;
     padding: 0 1.5vw;
-    font-size: clamp(0.5rem, 1vmin, 0.9rem);
-    color: var(--text-dim);
-    z-index: 10;
+    font-size: clamp(0.75rem, 1.4vmin, 1.3rem);
+    color: var(--text-dim); z-index: 10;
   }
-
   .bottom-bar-title {
-    letter-spacing: 0.15vw;
-    font-weight: 600;
+    letter-spacing: 0.2vw; font-weight: 700;
+    color: var(--text-muted);
+    font-size: clamp(0.85rem, 1.6vmin, 1.5rem);
   }
-
+  .bottom-bar-center {
+    display: flex; gap: 1.5vw; align-items: center;
+    font-size: clamp(0.8rem, 1.5vmin, 1.4rem);
+  }
   .clock {
     font-family: 'JetBrains Mono', monospace;
+    color: var(--accent); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: clamp(1rem, 1.8vmin, 1.7rem);
+    text-shadow: 0 0 10px rgba(56,189,248,0.2);
+  }
+
+  /* ── Settings Button ── */
+  .settings-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 0.4vmin;
     color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
+    font-size: clamp(0.9rem, 1.6vmin, 1.5rem);
+    padding: 0.3vh 0.6vw;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex; align-items: center; gap: 0.3vw;
+    letter-spacing: 0.05vw;
+  }
+  .settings-btn:hover {
+    color: var(--accent); border-color: var(--border-glow);
+    box-shadow: 0 0 12px rgba(56,189,248,0.12);
+    background: rgba(56,189,248,0.06);
+  }
+  .settings-btn .gear-icon {
+    display: inline-block;
+    transition: transform 0.5s ease;
+  }
+  .settings-btn:hover .gear-icon {
+    transform: rotate(90deg);
+  }
+
+  /* ── Settings Modal ── */
+  .settings-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .settings-overlay.open {
+    opacity: 1; pointer-events: all;
+  }
+  .settings-modal {
+    background: rgba(15,23,42,0.95);
+    backdrop-filter: blur(24px);
+    border: 1px solid var(--border-glow);
+    border-radius: 1.2vmin;
+    padding: 3vh 2.5vw;
+    width: min(90vw, 600px);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 0 80px rgba(56,189,248,0.12), 0 25px 60px rgba(0,0,0,0.5);
+    transform: scale(0.92) translateY(20px);
+    transition: transform 0.35s ease;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(56,189,248,0.15) transparent;
+  }
+  .settings-overlay.open .settings-modal {
+    transform: scale(1) translateY(0);
+  }
+  .settings-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2.5vh;
+    padding-bottom: 1.5vh;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .settings-modal-title {
+    font-size: clamp(1.2rem, 2.2vmin, 2rem);
+    font-weight: 800; color: var(--accent);
+    text-shadow: 0 0 20px var(--accent-glow);
+    letter-spacing: 0.1vw;
+  }
+  .settings-close-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 0.4vmin;
+    color: var(--text-muted);
+    font-size: clamp(1rem, 1.6vmin, 1.5rem);
+    padding: 0.3vh 0.6vw;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .settings-close-btn:hover {
+    color: var(--accent-red); border-color: rgba(248,113,113,0.3);
+    background: rgba(248,113,113,0.08);
+  }
+  .settings-section {
+    margin-bottom: 2.5vh;
+  }
+  .settings-section-title {
+    font-size: clamp(0.85rem, 1.4vmin, 1.3rem);
+    text-transform: uppercase; letter-spacing: 0.2vw;
+    color: var(--text-muted); font-weight: 700;
+    margin-bottom: 1.2vh;
+  }
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1vh 1vw;
+  }
+  .theme-card {
+    background: rgba(255,255,255,0.02);
+    border: 2px solid var(--border-color);
+    border-radius: 0.8vmin;
+    padding: 1.5vh 1vw;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+  .theme-card:hover {
+    border-color: var(--border-glow);
+    background: rgba(56,189,248,0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .theme-card.active {
+    border-color: var(--accent);
+    background: rgba(56,189,248,0.08);
+    box-shadow: 0 0 25px rgba(56,189,248,0.15), inset 0 0 0 1px rgba(56,189,248,0.1);
+  }
+  .theme-preview {
+    width: 100%; height: clamp(2rem, 4vmin, 3.5rem);
+    border-radius: 0.4vmin; margin-bottom: 0.8vh;
+    position: relative; overflow: hidden;
+  }
+  .theme-name {
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    font-weight: 700; color: var(--text-primary);
+    margin-bottom: 0.2vh;
+  }
+  .theme-desc {
+    font-size: clamp(0.55rem, 0.9vmin, 0.85rem);
+    color: var(--text-dim);
+  }
+  .settings-option {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1vh 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .settings-option:last-child { border-bottom: none; }
+  .settings-option-label {
+    font-size: clamp(0.8rem, 1.3vmin, 1.2rem);
+    color: var(--text-secondary);
+  }
+  .settings-option-desc {
+    font-size: clamp(0.55rem, 0.9vmin, 0.85rem);
+    color: var(--text-dim); margin-top: 0.2vh;
+  }
+  /* Toggle Switch */
+  .toggle-switch {
+    position: relative;
+    width: clamp(2.5rem, 4vmin, 3.5rem);
+    height: clamp(1.3rem, 2.2vmin, 2rem);
+    background: rgba(255,255,255,0.08);
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .toggle-switch.on {
+    background: rgba(56,189,248,0.3);
+    border-color: rgba(56,189,248,0.4);
+  }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: calc(clamp(1.3rem, 2.2vmin, 2rem) - 6px);
+    height: calc(clamp(1.3rem, 2.2vmin, 2rem) - 6px);
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+  .toggle-switch.on::after {
+    left: calc(100% - clamp(1.3rem, 2.2vmin, 2rem) + 4px);
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
   }
 </style>
-</head>
-<body style="background:#060a14">
+</head><body>
+  <div class="bg-mesh"><div class="bg-orb"></div><div class="bg-orb2"></div></div>
+  <div class="scanlines"></div>
 
-<!-- Animated background mesh -->
-<div class="bg-mesh"><div class="bg-orb"></div></div>
+  <div class="dashboard">
+    <!-- ─── Left Panel: SIMBA & Field ─── -->
+    <div class="left-panel">
 
-<!-- ═══════════════════════════ DASHBOARD GRID ════════════════════════════ -->
-<div class="dashboard">
-
-  <!-- ──────────── LEFT PANEL: Countdown Sections ──────────── -->
-  <div class="left-panel">
-
-    <!-- SIMBA Execution Countdown -->
-    <div class="section-card" id="simba-section">
-      <span class="section-label">Execution Countdown</span>
-      <span class="section-title">SIMBA</span>
-      <div class="countdown-ring-wrap">
-        <svg class="countdown-ring" viewBox="0 0 200 200">
-          <circle class="ring-track" cx="100" cy="100" r="90"/>
-          <circle class="ring-fill" cx="100" cy="100" r="90" id="simba-ring"
-                  stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
-        </svg>
-        <span class="countdown-value" id="simba-countdown">--:--:--</span>
+      <div class="section-card" id="simba-section">
+        <div class="section-label">Schedule</div>
+        <div class="section-title">SIMBA</div>
+        <div class="countdown-ring-wrap">
+          <svg class="countdown-ring" viewBox="0 0 200 200">
+            <circle class="ring-track" cx="100" cy="100" r="90"/>
+            <circle class="ring-glow"  cx="100" cy="100" r="90" id="simba-ring-glow" stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
+            <circle class="ring-fill"  cx="100" cy="100" r="90" id="simba-ring"      stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
+          </svg>
+          <div class="countdown-value" id="simba-countdown">--:--:--</div>
+        </div>
+        <div class="next-label">Next: <span id="simba-next">--:--</span></div>
+        <div class="pip-row" id="simba-pips"></div>
+        <div class="progress-track"><div class="progress-fill" id="simba-progress"></div></div>
       </div>
-      <span class="next-label">Next Run: <span id="simba-next">--:--</span></span>
-      <div class="pip-row" id="simba-pips"></div>
-      <div class="progress-track"><div class="progress-fill" id="simba-progress"></div></div>
+
+      <div class="section-card" id="field-section">
+        <div class="section-label">Schedule</div>
+        <div class="section-title">FIELD CONDITIONS</div>
+        <div class="countdown-ring-wrap">
+          <svg class="countdown-ring" viewBox="0 0 200 200">
+            <circle class="ring-track" cx="100" cy="100" r="90"/>
+            <circle class="ring-glow"  cx="100" cy="100" r="90" id="field-ring-glow" stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
+            <circle class="ring-fill"  cx="100" cy="100" r="90" id="field-ring"      stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
+          </svg>
+          <div class="countdown-value" id="field-countdown">--:--:--</div>
+        </div>
+        <div class="next-label">Next: <span id="field-next">--:--</span></div>
+        <div class="pip-row" id="field-pips"></div>
+        <div class="progress-track"><div class="progress-fill" id="field-progress"></div></div>
+      </div>
+
     </div>
 
-    <!-- Field Conditions Countdown -->
-    <div class="section-card" id="field-section">
-      <span class="section-label">Update Countdown</span>
-      <span class="section-title">Field Conditions</span>
-      <div class="countdown-ring-wrap">
-        <svg class="countdown-ring" viewBox="0 0 200 200">
-          <circle class="ring-track" cx="100" cy="100" r="90"/>
-          <circle class="ring-fill" cx="100" cy="100" r="90" id="field-ring"
-                  stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
-        </svg>
-        <span class="countdown-value" id="field-countdown">--:--:--</span>
-      </div>
-      <span class="next-label">Next Update: <span id="field-next">--:--</span></span>
-      <div class="pip-row" id="field-pips"></div>
-      <div class="progress-track"><div class="progress-fill" id="field-progress"></div></div>
-    </div>
+    <!-- ─── Right Panel: Weather ─── -->
+    <div class="right-panel">
 
+      <div class="wx-panel-header">
+        <div class="wx-panel-title">Live Weather Intelligence</div>
+        <div class="wx-panel-badge">8 Stations</div>
+      </div>
+
+      <div class="wx-content">
+        <!-- DFW Hero Card -->
+        <div class="weather-hero" id="wx-dfw">
+          <div class="hero-left">
+            <a href="dfw.html" style="text-decoration:none;color:inherit;" title="Open detailed DFW weather">
+              <div class="hero-icao" style="cursor:pointer;">DFW</div>
+            </a>
+            <div class="hero-airport-name">Dallas/Fort Worth Intl</div>
+            <div class="hero-conditions">
+              <span class="hero-conditions-badge" id="dfw-cat">---</span>
+              <span class="hero-wx-icon" id="dfw-icon"></span>
+            </div>
+            <div class="hero-obs-time" id="dfw-obs">Waiting...</div>
+          </div>
+          <div class="hero-details">
+            <div class="hero-metric">
+              <div class="hero-metric-label">Temp</div>
+              <div class="hero-metric-value" id="dfw-temp">--</div>
+              <div class="hero-metric-unit">&deg;C</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Dewpt</div>
+              <div class="hero-metric-value" id="dfw-dewpt">--</div>
+              <div class="hero-metric-unit">&deg;C</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Wind</div>
+              <div class="hero-metric-value" id="dfw-wind">--</div>
+              <div class="hero-metric-unit">kt</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Visibility</div>
+              <div class="hero-metric-value" id="dfw-vis">--</div>
+              <div class="hero-metric-unit">SM</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Ceiling</div>
+              <div class="hero-metric-value" id="dfw-ceil">--</div>
+              <div class="hero-metric-unit">ft</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Altimeter</div>
+              <div class="hero-metric-value" id="dfw-alt">--</div>
+              <div class="hero-metric-unit">inHg</div>
+            </div>
+          </div>
+          <div class="hero-metar-raw" id="dfw-metar">Fetching METAR...</div>
+        </div>
+
+        <!-- Airport Grid (7 stations) -->
+        <div class="airport-grid">
+
+          <div class="airport-card" id="wx-clt">
+            <div class="airport-header">
+              <div class="airport-icao-wrap">
+                <a href="clt.html" style="text-decoration:none;color:inherit;" title="Open detailed CLT weather"><span class="airport-icao" style="cursor:pointer;">CLT</span></a>
+                <span class="airport-wx-icon" id="clt-icon"></span>
+              </div>
+              <span class="airport-conditions" id="clt-cat">---</span>
+            </div>
+            <div class="airport-name">Charlotte Douglas</div>
+            <div class="airport-metrics">
+              <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="clt-temp">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="clt-dewpt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="clt-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="clt-vis">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="clt-ceil">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="clt-alt">--</span></div>
+            </div>
+            <div class="airport-metar-raw" id="clt-metar">--</div>
+          </div>
+
+          <div class="airport-card" id="wx-ord">
+            <div class="airport-header">
+              <div class="airport-icao-wrap">
+                <span class="airport-icao">ORD</span>
+                <span class="airport-wx-icon" id="ord-icon"></span>
+              </div>
+              <span class="airport-conditions" id="ord-cat">---</span>
+            </div>
+            <div class="airport-name">Chicago O'Hare Intl</div>
+            <div class="airport-metrics">
+              <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="ord-temp">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="ord-dewpt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="ord-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="ord-vis">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="ord-ceil">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="ord-alt">--</span></div>
+            </div>
+            <div class="airport-metar-raw" id="ord-metar">--</div>
+          </div>
+
+          <div class="airport-card" id="wx-mia">
+            <div class="airport-header">
+              <div class="airport-icao-wrap">
+                <span class="airport-icao">MIA</span>
+                <span class="airport-wx-icon" id="mia-icon"></span>
+              </div>
+              <span class="airport-conditions" id="mia-cat">---</span>
+            </div>
+            <div class="airport-name">Miami Intl</div>
+            <div class="airport-metrics">
+              <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="mia-temp">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="mia-dewpt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="mia-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="mia-vis">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="mia-ceil">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="mia-alt">--</span></div>
+            </div>
+            <div class="airport-metar-raw" id="mia-metar">--</div>
+          </div>
+
+          <div class="airport-card" id="wx-lax">
+            <div class="airport-header">
+              <div class="airport-icao-wrap">
+                <span class="airport-icao">LAX</span>
+                <span class="airport-wx-icon" id="lax-icon"></span>
+              </div>
+              <span class="airport-conditions" id="lax-cat">---</span>
+            </div>
+            <div class="airport-name">Los Angeles Intl</div>
+            <div class="airport-metrics">
+              <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="lax-temp">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="lax-dewpt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="lax-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="lax-vis">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="lax-ceil">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="lax-alt">--</span></div>
+            </div>
+            <div class="airport-metar-raw" id="lax-metar">--</div>
+          </div>
+
+          <div class="airport-card" id="wx-jfk">
+            <div class="airport-header">
+              <div class="airport-icao-wrap">
+                <span class="airport-icao">JFK</span>
+                <span class="airport-wx-icon" id="jfk-icon"></span>
+              </div>
+              <span class="airport-conditions" id="jfk-cat">---</span>
+            </div>
+            <div class="airport-name">John F. Kennedy Intl</div>
+            <div class="airport-metrics">
+              <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="jfk-temp">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="jfk-dewpt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="jfk-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="jfk-vis">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="jfk-ceil">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="jfk-alt">--</span></div>
+            </div>
+            <div class="airport-metar-raw" id="jfk-metar">--</div>
+          </div>
+
+          <div class="airport-card" id="wx-lhr">
+            <div class="airport-header">
+              <div class="airport-icao-wrap">
+                <span class="airport-icao">LHR</span>
+                <span class="airport-wx-icon" id="lhr-icon"></span>
+              </div>
+              <span class="airport-conditions" id="lhr-cat">---</span>
+            </div>
+            <div class="airport-name">London Heathrow</div>
+            <div class="airport-metrics">
+              <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="lhr-temp">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="lhr-dewpt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="lhr-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="lhr-vis">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="lhr-ceil">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="lhr-alt">--</span></div>
+            </div>
+            <div class="airport-metar-raw" id="lhr-metar">--</div>
+          </div>
+
+          <div class="airport-card" id="wx-akl">
+            <div class="airport-header">
+              <div class="airport-icao-wrap">
+                <span class="airport-icao">AKL</span>
+                <span class="airport-wx-icon" id="akl-icon"></span>
+              </div>
+              <span class="airport-conditions" id="akl-cat">---</span>
+            </div>
+            <div class="airport-name">Auckland Intl</div>
+            <div class="airport-metrics">
+              <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="akl-temp">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="akl-dewpt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="akl-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="akl-vis">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="akl-ceil">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="akl-alt">--</span></div>
+            </div>
+            <div class="airport-metar-raw" id="akl-metar">--</div>
+          </div>
+
+        </div><!-- /airport-grid -->
+      </div><!-- /wx-content -->
+    </div><!-- /right-panel -->
+  </div><!-- /dashboard -->
+
+  <!-- ─── Bottom Bar ─── -->
+  <div class="bottom-bar">
+    <span class="bottom-bar-title">OPS COMMAND CENTER</span>
+    <div class="bottom-bar-center">
+      <span id="wx-status" class="wx-ok">WX: Initializing</span>
+      <span id="date-display"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:1vw;">
+      <span class="clock" id="live-clock">--:--:--</span>
+      <button class="settings-btn" id="settings-btn" title="Settings">
+        <span class="gear-icon">&#9881;</span> SETTINGS
+      </button>
+    </div>
   </div>
 
-  <!-- ──────────── RIGHT PANEL: Weather Board ──────────── -->
-  <div class="right-panel">
-
-    <!-- DFW Hero Card -->
-    <div class="weather-hero">
-      <div>
-        <div class="hero-icao">DFW</div>
-        <div class="hero-airport-name">Dallas / Fort Worth Intl</div>
-        <div class="hero-conditions" style="margin-top:0.6vh">
-          <span class="hero-conditions-badge cat-vfr" id="dfw-conditions">--</span>
-          <span class="hero-wx-icon" id="dfw-wx-icon"></span>
-        </div>
-      </div>
-      <div class="hero-details">
-        <div class="hero-metric">
-          <span class="hero-metric-label">Temp</span>
-          <span class="hero-metric-value" id="dfw-temp">--</span>
-          <span class="hero-metric-unit">&deg;C</span>
-        </div>
-        <div class="hero-metric">
-          <span class="hero-metric-label">Wind</span>
-          <span class="hero-metric-value"><span id="dfw-wind-dir">---</span>&deg;/<span id="dfw-wind-speed">--</span></span>
-          <span class="hero-metric-unit">kt</span>
-        </div>
-        <div class="hero-metric">
-          <span class="hero-metric-label">Dewpt</span>
-          <span class="hero-metric-value" id="dfw-dewpoint">--</span>
-          <span class="hero-metric-unit">&deg;C</span>
-        </div>
-        <div class="hero-metric">
-          <span class="hero-metric-label">Vis</span>
-          <span class="hero-metric-value" id="dfw-visibility">--</span>
-          <span class="hero-metric-unit">SM</span>
-        </div>
-        <div class="hero-metric">
-          <span class="hero-metric-label">Alt</span>
-          <span class="hero-metric-value" id="dfw-altimeter">--</span>
-          <span class="hero-metric-unit">inHg</span>
-        </div>
-      </div>
-      <div class="hero-metar-raw" id="dfw-metar-raw">Awaiting METAR&hellip;</div>
-    </div>
-
-    <!-- Secondary Airports Grid -->
-    <div class="airport-grid">
-
-      <div class="airport-card" data-icao="CLT">
-        <div class="airport-header">
-          <span class="airport-icao-wrap"><span class="airport-icao">CLT</span><span class="airport-wx-icon" id="clt-wx-icon"></span></span>
-          <span class="airport-conditions cat-vfr" id="clt-conditions">--</span>
-        </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="clt-temp">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="clt-wind-dir">---</span>&deg;/<span id="clt-wind-speed">--</span>kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="clt-dewpoint">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="clt-altimeter">--</span></span></div>
-        <div class="airport-metar-raw" id="clt-metar-raw">--</div>
+  <!-- ─── Settings Modal ─── -->
+  <div class="settings-overlay" id="settings-overlay">
+    <div class="settings-modal">
+      <div class="settings-modal-header">
+        <span class="settings-modal-title">&#9881; Settings</span>
+        <button class="settings-close-btn" id="settings-close">&times;</button>
       </div>
 
-      <div class="airport-card" data-icao="ORD">
-        <div class="airport-header">
-          <span class="airport-icao-wrap"><span class="airport-icao">ORD</span><span class="airport-wx-icon" id="ord-wx-icon"></span></span>
-          <span class="airport-conditions cat-mvfr" id="ord-conditions">--</span>
+      <!-- Themes -->
+      <div class="settings-section">
+        <div class="settings-section-title">Theme</div>
+        <div class="theme-grid" id="theme-grid">
+
+          <div class="theme-card active" data-theme="default">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#060a14,#0f172a,#1e293b);"></div>
+            <div class="theme-name">Deep Space</div>
+            <div class="theme-desc">Default dark blue theme</div>
+          </div>
+
+          <div class="theme-card" data-theme="midnight">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0a0a0f,#1a1a2e,#16213e);"></div>
+            <div class="theme-name">Midnight</div>
+            <div class="theme-desc">Ultra dark indigo</div>
+          </div>
+
+          <div class="theme-card" data-theme="emerald">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#041210,#0a2520,#0f3b30);"></div>
+            <div class="theme-name">Emerald Ops</div>
+            <div class="theme-desc">Green tactical display</div>
+          </div>
+
+          <div class="theme-card" data-theme="amber">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#140e04,#251a0a,#3b2810);"></div>
+            <div class="theme-name">Amber Alert</div>
+            <div class="theme-desc">Warm amber operations</div>
+          </div>
+
+          <div class="theme-card" data-theme="crimson">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#140408,#250a10,#3b101a);"></div>
+            <div class="theme-name">Crimson</div>
+            <div class="theme-desc">Red-toned dark theme</div>
+          </div>
+
+          <div class="theme-card" data-theme="arctic">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0a1018,#101c2e,#182a40);"></div>
+            <div class="theme-name">Arctic</div>
+            <div class="theme-desc">Ice-cold pale blue</div>
+          </div>
+
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="ord-temp">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="ord-wind-dir">---</span>&deg;/<span id="ord-wind-speed">--</span>kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="ord-dewpoint">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="ord-altimeter">--</span></span></div>
-        <div class="airport-metar-raw" id="ord-metar-raw">--</div>
       </div>
 
-      <div class="airport-card" data-icao="MIA">
-        <div class="airport-header">
-          <span class="airport-icao-wrap"><span class="airport-icao">MIA</span><span class="airport-wx-icon" id="mia-wx-icon"></span></span>
-          <span class="airport-conditions cat-vfr" id="mia-conditions">--</span>
+      <!-- Display Options -->
+      <div class="settings-section">
+        <div class="settings-section-title">Display</div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Scanlines Effect</div>
+            <div class="settings-option-desc">CRT-style overlay lines</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-scanlines"></div>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="mia-temp">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="mia-wind-dir">---</span>&deg;/<span id="mia-wind-speed">--</span>kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="mia-dewpoint">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="mia-altimeter">--</span></span></div>
-        <div class="airport-metar-raw" id="mia-metar-raw">--</div>
-      </div>
-
-      <div class="airport-card" data-icao="LAX">
-        <div class="airport-header">
-          <span class="airport-icao-wrap"><span class="airport-icao">LAX</span><span class="airport-wx-icon" id="lax-wx-icon"></span></span>
-          <span class="airport-conditions cat-vfr" id="lax-conditions">--</span>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Background Animation</div>
+            <div class="settings-option-desc">Floating orb animations</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-bg-anim"></div>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="lax-temp">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="lax-wind-dir">---</span>&deg;/<span id="lax-wind-speed">--</span>kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="lax-dewpoint">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="lax-altimeter">--</span></span></div>
-        <div class="airport-metar-raw" id="lax-metar-raw">--</div>
-      </div>
-
-      <div class="airport-card" data-icao="JFK">
-        <div class="airport-header">
-          <span class="airport-icao-wrap"><span class="airport-icao">JFK</span><span class="airport-wx-icon" id="jfk-wx-icon"></span></span>
-          <span class="airport-conditions cat-ifr" id="jfk-conditions">--</span>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Card Hover Effects</div>
+            <div class="settings-option-desc">Glow on hover for airport cards</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-hover"></div>
         </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="jfk-temp">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="jfk-wind-dir">---</span>&deg;/<span id="jfk-wind-speed">--</span>kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="jfk-dewpoint">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="jfk-altimeter">--</span></span></div>
-        <div class="airport-metar-raw" id="jfk-metar-raw">--</div>
       </div>
-
-      <div class="airport-card" data-icao="LHR">
-        <div class="airport-header">
-          <span class="airport-icao-wrap"><span class="airport-icao">LHR</span><span class="airport-wx-icon" id="lhr-wx-icon"></span></span>
-          <span class="airport-conditions cat-mvfr" id="lhr-conditions">--</span>
-        </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="lhr-temp">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="lhr-wind-dir">---</span>&deg;/<span id="lhr-wind-speed">--</span>kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="lhr-dewpoint">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="lhr-altimeter">--</span></span></div>
-        <div class="airport-metar-raw" id="lhr-metar-raw">--</div>
-      </div>
-
-      <div class="airport-card" data-icao="AKL">
-        <div class="airport-header">
-          <span class="airport-icao-wrap"><span class="airport-icao">AKL</span><span class="airport-wx-icon" id="akl-wx-icon"></span></span>
-          <span class="airport-conditions cat-vfr" id="akl-conditions">--</span>
-        </div>
-        <div class="airport-row"><span class="airport-metric-label">Temp</span><span class="airport-metric-value"><span id="akl-temp">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Wind</span><span class="airport-metric-value"><span id="akl-wind-dir">---</span>&deg;/<span id="akl-wind-speed">--</span>kt</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value"><span id="akl-dewpoint">--</span>&deg;C</span></div>
-        <div class="airport-row"><span class="airport-metric-label">Alt</span><span class="airport-metric-value"><span id="akl-altimeter">--</span></span></div>
-        <div class="airport-metar-raw" id="akl-metar-raw">--</div>
-      </div>
-
     </div>
   </div>
-</div>
+  <!-- ─── JavaScript ─── -->
+  <script>
+    /* ═══════════════════════════════════════════════════════════════
+       OPERATIONS COMMAND CENTER — JavaScript Engine
+       ═══════════════════════════════════════════════════════════════ */
 
-<!-- Bottom bar with live clock -->
-<div class="bottom-bar">
-  <span class="bottom-bar-title">OPS COMMAND CENTER</span>
-  <span id="wx-status" class="wx-stale">WX: --</span>
-  <span class="clock" id="live-clock">--:--:--</span>
-</div>
+    // ── Schedules (24h local time [hour, minute]) ──
+    const SIMBA = [[2,0],[5,0],[8,0],[12,0],[14,0],[16,30],[20,0]];
+    const FIELD = [[6,0],[12,0],[14,30],[18,0]];
 
-<!-- ═══════════════════════════════════════════════════════════
-     JAVASCRIPT
-     ═══════════════════════════════════════════════════════════ -->
-<script>
-(function () {
-  'use strict';
+    // ── Alert: 10 minutes before event ──
+    const ALERT_WINDOW_MS = 10 * 60 * 1000;
+    const CIRC = 565.49;
 
-  /* ── Schedule definitions (local time, 24-hr) ── */
-  var SIMBA_SCHEDULE = [
-    [2, 0], [5, 0], [8, 0], [12, 0], [14, 0], [16, 30], [20, 0]
-  ];
-  var FIELD_SCHEDULE = [
-    [6, 0], [12, 0], [14, 30], [18, 0]
-  ];
+    // ── Weather Config ──
+    const STATIONS = {
+      dfw: 'KDFW', clt: 'KCLT', ord: 'KORD', mia: 'KMIA',
+      lax: 'KLAX', jfk: 'KJFK', lhr: 'EGLL', akl: 'NZAA'
+    };
+    const WX_PROXY = 'https://corsproxy.io/?url=';
+    const WX_BASE  = 'https://aviationweather.gov/api/data/metar';
+    const WPOLL = 5 * 60 * 1000;     // poll every 5 min
+    const STALE_MS = 15 * 60 * 1000; // stale after 15 min
+    let lastWxFetch = 0;
 
-  /* FIXED: Alert fires 10 minutes BEFORE each event only */
-  var ALERT_WINDOW_MS = 10 * 60 * 1000;
+    // ── DOM References ──
+    const $ = id => document.getElementById(id);
 
-  var RING_CIRCUMFERENCE = 2 * Math.PI * 90; /* ≈ 565.49 */
+    const simbaPips = $('simba-pips'), fieldPips = $('field-pips');
+    const simbaSec  = $('simba-section'), fieldSec  = $('field-section');
+    const simbaCD   = $('simba-countdown'), fieldCD   = $('field-countdown');
+    const simbaNx   = $('simba-next'),  fieldNx   = $('field-next');
+    const simbaRing = $('simba-ring'),  fieldRing = $('field-ring');
+    const simbaGlow = $('simba-ring-glow'), fieldGlow = $('field-ring-glow');
+    const simbaBar  = $('simba-progress'),  fieldBar  = $('field-progress');
+    const clockEl   = $('live-clock'), dateEl = $('date-display'), wxStatus = $('wx-status');
 
-  /* ── DOM references (cached once) ── */
-  var simbaSection   = document.getElementById('simba-section');
-  var simbaCountdown = document.getElementById('simba-countdown');
-  var simbaNext      = document.getElementById('simba-next');
-  var simbaPipsRow   = document.getElementById('simba-pips');
-  var simbaRing      = document.getElementById('simba-ring');
-  var simbaProgress  = document.getElementById('simba-progress');
+    // ── Helpers ──
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function pad3(n) { return String(n).padStart(3, '0'); }
+    function fmtHHMM(h, m) { return pad2(h) + ':' + pad2(m); }
 
-  var fieldSection   = document.getElementById('field-section');
-  var fieldCountdown = document.getElementById('field-countdown');
-  var fieldNext      = document.getElementById('field-next');
-  var fieldPipsRow   = document.getElementById('field-pips');
-  var fieldRing      = document.getElementById('field-ring');
-  var fieldProgress  = document.getElementById('field-progress');
-
-  var liveClock      = document.getElementById('live-clock');
-
-  var simbaPipEls = [];
-  var fieldPipEls = [];
-
-  /* ── Utility functions ── */
-  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
-  function pad3(n) { return n < 10 ? '00' + n : n < 100 ? '0' + n : '' + n; }
-  function formatTimeHHMM(h, m) { return pad2(h) + ':' + pad2(m); }
-
-  function formatCountdown(ms) {
-    if (ms < 0) ms = 0;
-    var totalSec = Math.floor(ms / 1000);
-    var h = Math.floor(totalSec / 3600);
-    var m = Math.floor((totalSec % 3600) / 60);
-    var s = totalSec % 60;
-    return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
-  }
-
-  function buildTime(dayBase, hm) {
-    return new Date(dayBase.getFullYear(), dayBase.getMonth(), dayBase.getDate(), hm[0], hm[1], 0, 0);
-  }
-
-  function buildPips(container, schedule) {
-    var pips = [];
-    for (var i = 0; i < schedule.length; i++) {
-      var pip = document.createElement('div');
-      pip.className = 'pip upcoming';
-      var dot = document.createElement('div');
-      dot.className = 'pip-dot';
-      var label = document.createElement('span');
-      label.className = 'pip-time';
-      label.textContent = formatTimeHHMM(schedule[i][0], schedule[i][1]);
-      pip.appendChild(dot);
-      pip.appendChild(label);
-      container.appendChild(pip);
-      pips.push({ el: pip });
+    function fmtCountdown(ms) {
+      if (ms <= 0) return '00:00:00';
+      const h = Math.floor(ms / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
     }
-    return pips;
-  }
 
-  /**
-   * Core update for a countdown section.
-   * FIXED: Alert window is [slotTime - 10min, slotTime).
-   * Slot is completed once now >= slotTime.
-   * Also drives the SVG ring and progress bar.
-   */
-  function updateSection(now, schedule, pipEls, sectionEl, countdownEl, nextEl, ringEl, progressEl) {
-    var today     = now;
-    var yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-    var tomorrow  = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-    var nowMs     = now.getTime();
+    function buildTime(d, hm) {
+      const t = new Date(d);
+      t.setHours(hm[0], hm[1], 0, 0);
+      return t;
+    }
 
-    var targetTime  = null;
-    var targetIndex = -1;
-    var prevTime    = null;
-    var isInAlert   = false;
+    // ── Build Pip Timeline ──
+    function buildPips(container, schedule) {
+      container.innerHTML = '';
+      schedule.forEach(hm => {
+        const pip = document.createElement('div');
+        pip.className = 'pip';
+        pip.innerHTML =
+          '<div class="pip-dot"></div>' +
+          '<div class="pip-time">' + fmtHHMM(hm[0], hm[1]) + '</div>';
+        container.appendChild(pip);
+      });
+    }
 
-    for (var i = 0; i < schedule.length; i++) {
-      var slotTime   = buildTime(today, schedule[i]);
-      var slotMs     = slotTime.getTime();
-      var alertStart = slotMs - ALERT_WINDOW_MS;
+    // ── Update Section (countdown, ring, pips, alert state) ──
+    function updateSection(now, sch, pips, secEl, cdEl, nxEl, ringEl, glowEl, progEl) {
+      const today = [];
+      sch.forEach(hm => today.push(buildTime(now, hm)));
 
-      if (nowMs >= slotMs) {
-        /* Slot time has passed — completed */
-        if (pipEls[i].el.className !== 'pip completed') {
-          pipEls[i].el.className = 'pip completed';
+      // Update pip states
+      const pipEls = pips.querySelectorAll('.pip');
+      let nextIdx = -1;
+      for (let i = 0; i < today.length; i++) {
+        pipEls[i].classList.remove('completed', 'current');
+        if (now >= today[i]) {
+          pipEls[i].classList.add('completed');
+        } else if (nextIdx === -1) {
+          nextIdx = i;
+          pipEls[i].classList.add('current');
         }
-        prevTime = slotTime;
-      } else if (nowMs >= alertStart) {
-        /* Within 10-min alert window BEFORE event */
-        if (pipEls[i].el.className !== 'pip current') {
-          pipEls[i].el.className = 'pip current';
-        }
-        isInAlert = true;
-        if (targetTime === null) {
-          targetTime  = slotTime;
-          targetIndex = i;
-        }
+      }
+
+      // Find next event time
+      let nextTime;
+      if (nextIdx === -1) {
+        // All events done today, wrap to first event tomorrow
+        nextTime = new Date(today[0]);
+        nextTime.setDate(nextTime.getDate() + 1);
       } else {
-        /* Future slot */
-        if (pipEls[i].el.className !== 'pip upcoming') {
-          pipEls[i].el.className = 'pip upcoming';
+        nextTime = today[nextIdx];
+      }
+
+      const diff = nextTime - now;
+      cdEl.textContent = fmtCountdown(diff);
+      nxEl.textContent = fmtHHMM(nextTime.getHours(), nextTime.getMinutes());
+
+      // Ring progress (1 hour = full ring)
+      const maxWindow = 3600000;
+      const elapsed = maxWindow - Math.min(diff, maxWindow);
+      const ratio = elapsed / maxWindow;
+      const offset = CIRC * (1 - ratio);
+      ringEl.style.strokeDashoffset = offset;
+      glowEl.style.strokeDashoffset = offset;
+
+      // Progress bar (same ratio)
+      progEl.style.width = (ratio * 100) + '%';
+
+      // Alert state (10 min before)
+      const isAlert = diff <= ALERT_WINDOW_MS && diff > 0;
+      secEl.classList.toggle('alert-active', isAlert);
+      ringEl.classList.toggle('alert-ring', isAlert);
+      glowEl.classList.toggle('alert-ring', isAlert);
+      progEl.classList.toggle('alert-progress', isAlert);
+      if (isAlert) {
+        cdEl.style.color = '';
+        cdEl.style.textShadow = '';
+      } else {
+        cdEl.style.color = '';
+        cdEl.style.textShadow = '';
+      }
+    }
+
+    // ── Main Tick (every second) ──
+    function tick() {
+      const now = new Date();
+
+      // Update clock
+      clockEl.textContent = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
+
+      // Update date
+      const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+      const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      dateEl.textContent = days[now.getDay()] + ' ' + pad2(now.getDate()) + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+      // Update sections
+      updateSection(now, SIMBA, simbaPips, simbaSec, simbaCD, simbaNx, simbaRing, simbaGlow, simbaBar);
+      updateSection(now, FIELD, fieldPips, fieldSec, fieldCD, fieldNx, fieldRing, fieldGlow, fieldBar);
+
+      // Wx staleness check
+      if (lastWxFetch > 0) {
+        const age = Date.now() - lastWxFetch;
+        if (age > STALE_MS) {
+          wxStatus.textContent = 'WX: STALE (' + Math.floor(age / 60000) + 'm ago)';
+          wxStatus.className = 'wx-stale';
         }
-        if (targetTime === null) {
-          targetTime  = slotTime;
-          targetIndex = i;
+      }
+    }
+
+    // ── Weather Icon from METAR ──
+    function getWxIcon(wx, clouds) {
+      const w = (wx || '').toLowerCase();
+      if (w.includes('ts') || w.includes('thunder'))  return '\u26C8\uFE0F';
+      if (w.includes('sn') || w.includes('snow'))     return '\u2744\uFE0F';
+      if (w.includes('fz') || w.includes('freez'))    return '\u{1F9CA}';
+      if (w.includes('ra') || w.includes('rain') || w.includes('dz')) return '\u{1F327}\uFE0F';
+      if (w.includes('fg') || w.includes('fog'))      return '\u{1F32B}\uFE0F';
+      if (w.includes('br') || w.includes('mist') || w.includes('hz') || w.includes('haze')) return '\u{1F32B}\uFE0F';
+      if (clouds) {
+        for (const c of clouds) {
+          if (c.cover === 'OVC' || c.cover === 'BKN') return '\u2601\uFE0F';
+          if (c.cover === 'SCT') return '\u26C5';
+          if (c.cover === 'FEW') return '\u{1F324}\uFE0F';
         }
       }
+      return '\u2600\uFE0F';
     }
 
-    /* If all today's slots are past, target tomorrow's first slot */
-    if (targetTime === null) {
-      targetTime  = buildTime(tomorrow, schedule[0]);
-      targetIndex = 0;
-      if (!prevTime) prevTime = buildTime(today, schedule[schedule.length - 1]);
-    }
-
-    /* If before first slot today, prev = yesterday's last slot */
-    if (prevTime === null) {
-      prevTime = buildTime(yesterday, schedule[schedule.length - 1]);
-    }
-
-    /* Countdown text */
-    var diffMs = targetTime.getTime() - nowMs;
-    if (diffMs < 0) diffMs = 0;
-    countdownEl.textContent = formatCountdown(diffMs);
-    nextEl.textContent = formatTimeHHMM(schedule[targetIndex][0], schedule[targetIndex][1]);
-
-    /* Ring progress: fills from 0 (prev event) to 1 (next event) */
-    var intervalMs = targetTime.getTime() - prevTime.getTime();
-    var elapsedMs  = nowMs - prevTime.getTime();
-    var ratio = intervalMs > 0 ? Math.min(Math.max(elapsedMs / intervalMs, 0), 1) : 0;
-    var offset = RING_CIRCUMFERENCE * (1 - ratio);
-    ringEl.style.strokeDashoffset = offset;
-
-    if (isInAlert) {
-      if (!ringEl.classList.contains('alert-ring')) ringEl.classList.add('alert-ring');
-    } else {
-      if (ringEl.classList.contains('alert-ring')) ringEl.classList.remove('alert-ring');
-    }
-
-    /* Progress bar */
-    progressEl.style.width = (ratio * 100).toFixed(2) + '%';
-    if (isInAlert) {
-      if (!progressEl.classList.contains('alert-progress')) progressEl.classList.add('alert-progress');
-    } else {
-      if (progressEl.classList.contains('alert-progress')) progressEl.classList.remove('alert-progress');
-    }
-
-    /* Section alert class */
-    if (isInAlert) {
-      if (!sectionEl.classList.contains('alert-active')) sectionEl.classList.add('alert-active');
-    } else {
-      if (sectionEl.classList.contains('alert-active')) sectionEl.classList.remove('alert-active');
-    }
-  }
-
-  /* ── Initialization ── */
-  simbaPipEls = buildPips(simbaPipsRow, SIMBA_SCHEDULE);
-  fieldPipEls = buildPips(fieldPipsRow, FIELD_SCHEDULE);
-
-  var STALE_THRESHOLD_MS = 15 * 60 * 1000;
-  var wxStatusEl = document.getElementById('wx-status');
-  var lastWxFetchOk = 0;
-
-  function tick() {
-    var now = new Date();
-    liveClock.textContent = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
-    updateSection(now, SIMBA_SCHEDULE, simbaPipEls, simbaSection, simbaCountdown, simbaNext, simbaRing, simbaProgress);
-    updateSection(now, FIELD_SCHEDULE, fieldPipEls, fieldSection, fieldCountdown, fieldNext, fieldRing, fieldProgress);
-    if (lastWxFetchOk && Date.now() - lastWxFetchOk > STALE_THRESHOLD_MS) {
-      wxStatusEl.className = 'wx-stale';
-    }
-  }
-
-  tick();
-  setInterval(tick, 1000);
-
-  /* ═══════════════════════════════════════════════════════════
-     WEATHER ICON MAPPING
-     ═══════════════════════════════════════════════════════════ */
-  function getWeatherIcon(wxString, clouds) {
-    var wx = (wxString || '').toUpperCase();
-    if (wx.indexOf('TS') !== -1) return '\u26C8\uFE0F';
-    if (wx.indexOf('SN') !== -1 || wx.indexOf('GR') !== -1 || wx.indexOf('PL') !== -1) return '\u2744\uFE0F';
-    if (wx.indexOf('FZ') !== -1) return '\u2744\uFE0F';
-    if (wx.indexOf('RA') !== -1 || wx.indexOf('DZ') !== -1 || wx.indexOf('SH') !== -1) return '\uD83C\uDF27\uFE0F';
-    if (wx.indexOf('FG') !== -1) return '\uD83C\uDF2B\uFE0F';
-    if (wx.indexOf('BR') !== -1 || wx.indexOf('HZ') !== -1) return '\uD83C\uDF2B\uFE0F';
-    if (clouds && clouds.length > 0) {
-      var maxCover = '';
-      for (var i = 0; i < clouds.length; i++) {
-        var c = (clouds[i].cover || '').toUpperCase();
-        if (c === 'OVC' || c === 'BKN') { maxCover = c; break; }
-        if (c === 'SCT' && maxCover !== 'OVC' && maxCover !== 'BKN') maxCover = c;
-        if (c === 'FEW' && !maxCover) maxCover = c;
+    // ── Ceiling from cloud layers ──
+    function getCeiling(clouds) {
+      if (!clouds || clouds.length === 0) return 'CLR';
+      let lowest = null;
+      for (const c of clouds) {
+        if (c.cover === 'BKN' || c.cover === 'OVC') {
+          const base = c.base || 0;
+          if (lowest === null || base < lowest) lowest = base;
+        }
       }
-      if (maxCover === 'OVC') return '\u2601\uFE0F';
-      if (maxCover === 'BKN') return '\uD83C\uDF25\uFE0F';
-      if (maxCover === 'SCT') return '\u26C5';
-      if (maxCover === 'FEW') return '\uD83C\uDF24\uFE0F';
+      if (lowest !== null) return lowest.toLocaleString();
+      // No ceiling, report lowest layer
+      const first = clouds[0];
+      return (first.cover || 'CLR') + (first.base ? ' ' + first.base.toLocaleString() : '');
     }
-    return '\u2600\uFE0F';
-  }
 
-  /* ═══════════════════════════════════════════════════════════
-     LIVE WEATHER — aviationweather.gov METAR JSON API
-     ═══════════════════════════════════════════════════════════ */
-  var STATIONS = {
-    dfw: 'KDFW', clt: 'KCLT', ord: 'KORD', mia: 'KMIA',
-    lax: 'KLAX', jfk: 'KJFK', lhr: 'EGLL', akl: 'NZAA'
-  };
-  var STATION_IDS = Object.keys(STATIONS).map(function (k) { return STATIONS[k]; }).join(',');
-  var AWX_URL = 'https://aviationweather.gov/api/data/metar?ids=' + STATION_IDS + '&format=json&taf=false&hours=1.5';
-  var CORS_PROXY = 'https://corsproxy.io/?url=';
-  var WEATHER_URL = CORS_PROXY + encodeURIComponent(AWX_URL);
-  var WEATHER_POLL_MS = 5 * 60 * 1000;
+    // ── Format Observation Time ──
+    function fmtObs(t) {
+      if (!t) return '';
+      try {
+        const d = new Date(t);
+        return 'OBS ' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) + 'Z';
+      } catch(e) { return ''; }
+    }
 
-  var icaoToKey = {};
-  var keys = Object.keys(STATIONS);
-  for (var k = 0; k < keys.length; k++) {
-    icaoToKey[STATIONS[keys[k]]] = keys[k];
-  }
+    // ── Apply Weather Data ──
+    function applyWx(latest) {
+      for (const [key, icao] of Object.entries(STATIONS)) {
+        const obs = latest[icao];
+        if (!obs) continue;
 
-  function applyWeather(latest) {
-    var icaos = Object.keys(latest);
-    for (var i = 0; i < icaos.length; i++) {
-      var d = latest[icaos[i]];
-      var key = icaoToKey[icaos[i]];
-      if (!key) continue;
+        const temp   = obs.temp !== undefined && obs.temp !== null ? Math.round(obs.temp) : '--';
+        const dewpt  = obs.dewp !== undefined && obs.dewp !== null ? Math.round(obs.dewp) : '--';
+        const wdir   = obs.wdir !== undefined ? (obs.wdir === 0 && obs.wspd === 0 ? 'VRB' : pad3(obs.wdir)) : '--';
+        const wspd   = obs.wspd !== undefined && obs.wspd !== null ? Math.round(obs.wspd) : '--';
+        const wgst   = obs.wgst ? 'G' + Math.round(obs.wgst) : '';
+        const windStr = wdir + '\u00B0/' + wspd + wgst;
+        const vis    = obs.visib !== undefined && obs.visib !== null ? obs.visib : '--';
+        const ceil   = getCeiling(obs.clouds);
+        const alt    = obs.altim ? (obs.altim * 0.02953).toFixed(2) : '--';
+        const cat    = (obs.fltcat || '---').toUpperCase();
+        const catCls = 'cat-' + cat.toLowerCase();
+        const icon   = getWxIcon(obs.wxString, obs.clouds);
+        const raw    = obs.rawOb || '--';
 
-      var tempEl = document.getElementById(key + '-temp');
-      var wsEl   = document.getElementById(key + '-wind-speed');
-      var wdEl   = document.getElementById(key + '-wind-dir');
-      var dpEl   = document.getElementById(key + '-dewpoint');
-      var cEl    = document.getElementById(key + '-conditions');
-      var altEl  = document.getElementById(key + '-altimeter');
-      var rawEl  = document.getElementById(key + '-metar-raw');
-      var wxEl   = document.getElementById(key + '-wx-icon');
-
-      if (tempEl && d.temp != null) tempEl.textContent = Math.round(d.temp);
-      if (dpEl && d.dewp != null)   dpEl.textContent   = Math.round(d.dewp);
-      if (wdEl && d.wdir != null)   wdEl.textContent   = pad3(d.wdir);
-      if (wsEl && d.wspd != null)   wsEl.textContent   = d.wgst ? d.wspd + 'G' + d.wgst : '' + d.wspd;
-
-      /* Altimeter: API returns hPa, convert to inHg */
-      if (altEl && d.altim != null) {
-        var inHg = d.altim * 0.02953;
-        altEl.textContent = inHg.toFixed(2);
-      }
-
-      /* Raw METAR */
-      if (rawEl && d.rawOb) {
-        rawEl.textContent = d.rawOb;
-        rawEl.title = d.rawOb;
-      }
-
-      /* Weather icon */
-      if (wxEl) {
-        wxEl.textContent = getWeatherIcon(d.wxString, d.clouds);
-      }
-
-      /* Visibility — DFW hero */
-      if (key === 'dfw') {
-        var visEl = document.getElementById('dfw-visibility');
-        if (visEl && d.visib != null) visEl.textContent = d.visib;
-      }
-
-      /* Flight category badge */
-      if (cEl && d.fltCat) {
-        var cat = d.fltCat.toUpperCase();
-        cEl.textContent = cat;
-        var catClass = 'cat-' + cat.toLowerCase();
         if (key === 'dfw') {
-          cEl.className = 'hero-conditions-badge ' + catClass;
+          $('dfw-temp').textContent   = temp;
+          $('dfw-dewpt').textContent  = dewpt;
+          $('dfw-wind').textContent   = windStr;
+          $('dfw-vis').textContent    = vis;
+          $('dfw-ceil').textContent   = ceil;
+          $('dfw-alt').textContent    = alt;
+          $('dfw-metar').textContent  = raw;
+          $('dfw-obs').textContent    = fmtObs(obs.obsTime || obs.reportTime);
+          const catEl = $('dfw-cat');
+          catEl.textContent = cat;
+          catEl.className = 'hero-conditions-badge ' + catCls;
+          $('dfw-icon').textContent = icon;
         } else {
-          cEl.className = 'airport-conditions ' + catClass;
+          const el = id => $(key + '-' + id);
+          el('temp').textContent   = temp;
+          el('dewpt').textContent  = dewpt;
+          el('wind').textContent   = windStr;
+          el('vis').textContent    = vis;
+          el('ceil').textContent   = ceil;
+          el('alt').textContent    = alt;
+          el('metar').textContent  = raw;
+          el('icon').textContent   = icon;
+          const catEl = el('cat');
+          catEl.textContent = cat;
+          catEl.className = 'airport-conditions ' + catCls;
         }
       }
     }
-  }
 
-  function fetchWeather() {
-    fetch(WEATHER_URL).then(function (res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    }).then(function (arr) {
-      var latest = {};
-      for (var i = 0; i < arr.length; i++) {
-        var ob = arr[i];
-        if (!latest[ob.icaoId] || ob.obsTime > latest[ob.icaoId].obsTime) {
-          latest[ob.icaoId] = ob;
+    // ── Fetch Weather ──
+    async function fetchWx() {
+      const ids = Object.values(STATIONS).join(',');
+      const url = WX_PROXY + encodeURIComponent(
+        WX_BASE + '?ids=' + ids + '&format=json&hours=1'
+      );
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        // Build lookup: latest per station
+        const latest = {};
+        if (Array.isArray(data)) {
+          data.forEach(ob => {
+            if (ob.icaoId) latest[ob.icaoId] = ob;
+          });
         }
+
+        applyWx(latest);
+        lastWxFetch = Date.now();
+        wxStatus.textContent = 'WX: LIVE';
+        wxStatus.className = 'wx-ok';
+      } catch(e) {
+        console.error('Weather fetch error:', e);
+        wxStatus.textContent = 'WX: ERROR';
+        wxStatus.className = 'wx-stale';
       }
-      applyWeather(latest);
-      lastWxFetchOk = Date.now();
-      var n = new Date();
-      wxStatusEl.textContent = 'WX: ' + pad2(n.getHours()) + ':' + pad2(n.getMinutes()) + ':' + pad2(n.getSeconds());
-      wxStatusEl.className = 'wx-ok';
-    }).catch(function (err) {
-      console.error('Weather fetch failed:', err);
-      if (lastWxFetchOk && Date.now() - lastWxFetchOk > STALE_THRESHOLD_MS) {
-        wxStatusEl.textContent = 'WX: STALE \u26A0';
-        wxStatusEl.className = 'wx-stale';
+    }
+
+    // ── Initialize ──
+    buildPips(simbaPips, SIMBA);
+    buildPips(fieldPips, FIELD);
+    tick();
+    setInterval(tick, 1000);
+    fetchWx();
+    setInterval(fetchWx, WPOLL);
+
+    // ═══════════════════════════════════════════════════════════════
+    // SETTINGS ENGINE
+    // ═══════════════════════════════════════════════════════════════
+
+    const THEMES = {
+      default: {
+        '--bg-primary':    '#060a14',
+        '--bg-card':       'rgba(15, 23, 42, 0.65)',
+        '--bg-card-alt':   'rgba(22, 33, 55, 0.55)',
+        '--bg-card-hover': 'rgba(30, 42, 66, 0.7)',
+        '--border-color':  'rgba(56, 189, 248, 0.08)',
+        '--border-glow':   'rgba(56, 189, 248, 0.22)',
+        '--accent':        '#38bdf8',
+        '--accent-glow':   'rgba(56, 189, 248, 0.35)',
+        '--accent-green':  '#34d399',
+        '--accent-amber':  '#fbbf24',
+        '--accent-red':    '#f87171',
+        '--accent-purple': '#a78bfa',
+        'orb1': 'rgba(99, 102, 241, 0.4)',
+        'orb2': 'rgba(14, 165, 233, 0.35)',
+      },
+      midnight: {
+        '--bg-primary':    '#0a0a0f',
+        '--bg-card':       'rgba(20, 20, 40, 0.65)',
+        '--bg-card-alt':   'rgba(26, 26, 46, 0.55)',
+        '--bg-card-hover': 'rgba(35, 35, 60, 0.7)',
+        '--border-color':  'rgba(120, 100, 255, 0.08)',
+        '--border-glow':   'rgba(120, 100, 255, 0.22)',
+        '--accent':        '#818cf8',
+        '--accent-glow':   'rgba(129, 140, 248, 0.35)',
+        '--accent-green':  '#6ee7b7',
+        '--accent-amber':  '#fcd34d',
+        '--accent-red':    '#fca5a5',
+        '--accent-purple': '#c4b5fd',
+        'orb1': 'rgba(129, 140, 248, 0.35)',
+        'orb2': 'rgba(99, 102, 241, 0.3)',
+      },
+      emerald: {
+        '--bg-primary':    '#041210',
+        '--bg-card':       'rgba(10, 40, 30, 0.65)',
+        '--bg-card-alt':   'rgba(15, 50, 38, 0.55)',
+        '--bg-card-hover': 'rgba(20, 65, 48, 0.7)',
+        '--border-color':  'rgba(52, 211, 153, 0.08)',
+        '--border-glow':   'rgba(52, 211, 153, 0.22)',
+        '--accent':        '#34d399',
+        '--accent-glow':   'rgba(52, 211, 153, 0.35)',
+        '--accent-green':  '#6ee7b7',
+        '--accent-amber':  '#fbbf24',
+        '--accent-red':    '#f87171',
+        '--accent-purple': '#a78bfa',
+        'orb1': 'rgba(16, 185, 129, 0.3)',
+        'orb2': 'rgba(52, 211, 153, 0.25)',
+      },
+      amber: {
+        '--bg-primary':    '#140e04',
+        '--bg-card':       'rgba(40, 30, 12, 0.65)',
+        '--bg-card-alt':   'rgba(50, 38, 16, 0.55)',
+        '--bg-card-hover': 'rgba(65, 50, 22, 0.7)',
+        '--border-color':  'rgba(251, 191, 36, 0.08)',
+        '--border-glow':   'rgba(251, 191, 36, 0.22)',
+        '--accent':        '#fbbf24',
+        '--accent-glow':   'rgba(251, 191, 36, 0.35)',
+        '--accent-green':  '#34d399',
+        '--accent-amber':  '#f59e0b',
+        '--accent-red':    '#f87171',
+        '--accent-purple': '#c4b5fd',
+        'orb1': 'rgba(245, 158, 11, 0.3)',
+        'orb2': 'rgba(251, 191, 36, 0.25)',
+      },
+      crimson: {
+        '--bg-primary':    '#140408',
+        '--bg-card':       'rgba(40, 12, 18, 0.65)',
+        '--bg-card-alt':   'rgba(50, 16, 24, 0.55)',
+        '--bg-card-hover': 'rgba(65, 22, 32, 0.7)',
+        '--border-color':  'rgba(248, 113, 113, 0.08)',
+        '--border-glow':   'rgba(248, 113, 113, 0.22)',
+        '--accent':        '#f87171',
+        '--accent-glow':   'rgba(248, 113, 113, 0.35)',
+        '--accent-green':  '#34d399',
+        '--accent-amber':  '#fbbf24',
+        '--accent-red':    '#ef4444',
+        '--accent-purple': '#fca5a5',
+        'orb1': 'rgba(239, 68, 68, 0.3)',
+        'orb2': 'rgba(248, 113, 113, 0.25)',
+      },
+      arctic: {
+        '--bg-primary':    '#0a1018',
+        '--bg-card':       'rgba(16, 28, 46, 0.65)',
+        '--bg-card-alt':   'rgba(22, 36, 56, 0.55)',
+        '--bg-card-hover': 'rgba(30, 46, 70, 0.7)',
+        '--border-color':  'rgba(147, 197, 253, 0.08)',
+        '--border-glow':   'rgba(147, 197, 253, 0.22)',
+        '--accent':        '#93c5fd',
+        '--accent-glow':   'rgba(147, 197, 253, 0.35)',
+        '--accent-green':  '#6ee7b7',
+        '--accent-amber':  '#fde68a',
+        '--accent-red':    '#fca5a5',
+        '--accent-purple': '#c4b5fd',
+        'orb1': 'rgba(96, 165, 250, 0.3)',
+        'orb2': 'rgba(147, 197, 253, 0.25)',
       }
+    };
+
+    // ── Settings State ──
+    let settings = {
+      theme: 'default',
+      scanlines: true,
+      bgAnim: true,
+      hoverEffects: true
+    };
+
+    // Load saved settings
+    try {
+      const saved = localStorage.getItem('ops-settings');
+      if (saved) settings = { ...settings, ...JSON.parse(saved) };
+    } catch(e) {}
+
+    function saveSettings() {
+      try { localStorage.setItem('ops-settings', JSON.stringify(settings)); } catch(e) {}
+    }
+
+    // ── Apply Theme ──
+    function applyTheme(name) {
+      const theme = THEMES[name];
+      if (!theme) return;
+      const root = document.documentElement;
+      for (const [key, val] of Object.entries(theme)) {
+        if (key.startsWith('--')) root.style.setProperty(key, val);
+      }
+      // Update orb backgrounds
+      const bgMesh = document.querySelector('.bg-mesh');
+      if (bgMesh && theme.orb1) {
+        bgMesh.style.setProperty('--orb1-color', theme.orb1);
+        bgMesh.style.setProperty('--orb2-color', theme.orb2);
+      }
+      // Update active card
+      document.querySelectorAll('.theme-card').forEach(c => {
+        c.classList.toggle('active', c.dataset.theme === name);
+      });
+      settings.theme = name;
+      saveSettings();
+    }
+
+    // ── Apply Display Settings ──
+    function applyDisplaySettings() {
+      // Scanlines
+      const scanEl = document.querySelector('.scanlines');
+      if (scanEl) scanEl.style.display = settings.scanlines ? '' : 'none';
+      $('toggle-scanlines').classList.toggle('on', settings.scanlines);
+
+      // BG Animation
+      const orbs = document.querySelectorAll('.bg-mesh, .bg-mesh::before, .bg-mesh::after, .bg-orb, .bg-orb2');
+      const bgMesh = document.querySelector('.bg-mesh');
+      if (bgMesh) bgMesh.style.display = settings.bgAnim ? '' : 'none';
+      $('toggle-bg-anim').classList.toggle('on', settings.bgAnim);
+
+      // Hover effects
+      document.body.classList.toggle('no-hover', !settings.hoverEffects);
+      $('toggle-hover').classList.toggle('on', settings.hoverEffects);
+    }
+
+    // ── Settings Modal Open/Close ──
+    const overlay = $('settings-overlay');
+
+    $('settings-btn').addEventListener('click', () => {
+      overlay.classList.add('open');
     });
-  }
 
-  fetchWeather();
-  setInterval(fetchWeather, WEATHER_POLL_MS);
+    $('settings-close').addEventListener('click', () => {
+      overlay.classList.remove('open');
+    });
 
-})();
-</script>
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
 
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') overlay.classList.remove('open');
+    });
+
+    // ── Theme Cards ──
+    document.querySelectorAll('.theme-card').forEach(card => {
+      card.addEventListener('click', () => {
+        applyTheme(card.dataset.theme);
+      });
+    });
+
+    // ── Toggle Switches ──
+    $('toggle-scanlines').addEventListener('click', () => {
+      settings.scanlines = !settings.scanlines;
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    $('toggle-bg-anim').addEventListener('click', () => {
+      settings.bgAnim = !settings.bgAnim;
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    $('toggle-hover').addEventListener('click', () => {
+      settings.hoverEffects = !settings.hoverEffects;
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    // ── Apply saved settings on load ──
+    applyTheme(settings.theme);
+    applyDisplaySettings();
+  </script>
 </body>
 </html>
