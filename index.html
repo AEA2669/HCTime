@@ -720,7 +720,11 @@
     lax: 'KLAX', jfk: 'KJFK', lhr: 'EGLL', akl: 'NZAA'
   };
   var STATION_IDS = Object.keys(STATIONS).map(function (k) { return STATIONS[k]; }).join(',');
-  var WEATHER_URL = 'https://aviationweather.gov/api/data/metar?ids=' + STATION_IDS + '&format=json&taf=false&hours=1.5';
+  var AWX_URL = 'https://aviationweather.gov/api/data/metar?ids=' + STATION_IDS + '&format=json&taf=false&hours=1.5';
+  /* CORS proxy required — aviationweather.gov does not send Access-Control-Allow-Origin.
+     Replace with your own proxy (e.g. Cloudflare Worker) for better reliability. */
+  var CORS_PROXY = 'https://corsproxy.io/?url=';
+  var WEATHER_URL = CORS_PROXY + encodeURIComponent(AWX_URL);
   var WEATHER_POLL_MS = 5 * 60 * 1000;
 
   /* Map ICAO → key for DOM lookup */
