@@ -465,7 +465,7 @@
     display: flex; flex-direction: column; gap: 0.4vh;
     transition: all 0.3s ease;
     animation: cardIn 0.6s ease-out both;
-    position: relative;
+    position: relative; overflow: hidden;
   }
   .airport-card:nth-child(1) { animation-delay: .25s; }
   .airport-card:nth-child(2) { animation-delay: .30s; }
@@ -514,21 +514,46 @@
 
   .airport-metrics {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 0.3vh 0.6vw;
+    gap: 0.4vh 0.5vw;
   }
   .airport-metric {
-    display: flex; justify-content: space-between;
-    align-items: baseline;
+    display: flex; flex-direction: column;
+    align-items: center; min-width: 0;
+    padding: 0.3vh 0.2vw;
+    border-radius: 0.3vmin;
+    background: rgba(255,255,255,0.015);
   }
   .airport-metric-label {
-    font-size: clamp(0.65rem, 1.2vmin, 1.1rem);
+    font-size: clamp(0.5rem, 0.9vmin, 0.85rem);
     color: var(--text-dim); text-transform: uppercase;
-    letter-spacing: 0.03vw;
+    letter-spacing: 0.04vw; line-height: 1.1;
   }
   .airport-metric-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(1.1rem, 2.2vmin, 2.1rem);
-    font-weight: 600; color: var(--text-primary);
+    font-size: clamp(0.85rem, 1.7vmin, 1.6rem);
+    font-weight: 700; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; max-width: 100%;
+    line-height: 1.15;
+  }
+
+  /* ── Metric Value Color Coding ── */
+  .val-green  { color: #34d399; text-shadow: 0 0 6px rgba(52,211,153,0.2); }
+  .val-amber  { color: #fbbf24; text-shadow: 0 0 6px rgba(251,191,36,0.2); }
+  .val-red    { color: #f87171; text-shadow: 0 0 6px rgba(248,113,113,0.25); }
+
+  /* ── Flight Category Card Accent ── */
+  .airport-card::before {
+    content: ''; position: absolute; top: 8%; bottom: 8%;
+    left: 0; width: 3px; border-radius: 0 2px 2px 0;
+    background: var(--card-cat-color, transparent);
+    box-shadow: 0 0 8px var(--card-cat-color, transparent);
+    transition: background 0.5s ease, box-shadow 0.5s ease;
+  }
+
+  /* Row 2 cards get slightly bigger metric values since they have more room */
+  .airport-card:nth-child(n+5) .airport-metric-value {
+    font-size: clamp(0.95rem, 1.9vmin, 1.8rem);
   }
 
   .airport-metar-raw {
@@ -1274,6 +1299,26 @@
       return (first.cover || 'CLR') + (first.base ? ' ' + first.base.toLocaleString() : '');
     }
 
+    // ── Color-code metric values based on aviation severity ──
+    function colorWind(el, wspd, wgst) {
+      const spd = wgst || wspd;
+      el.className = 'airport-metric-value' + (spd >= 25 ? ' val-red' : spd >= 15 ? ' val-amber' : '');
+    }
+    function colorVis(el, vis) {
+      const v = parseFloat(vis);
+      if (isNaN(v)) return;
+      el.className = 'airport-metric-value' + (v < 3 ? ' val-red' : v < 5 ? ' val-amber' : v >= 5 ? ' val-green' : '');
+    }
+    function colorCeil(el, ceil) {
+      const c = parseInt(String(ceil).replace(/,/g, ''));
+      if (isNaN(c)) { el.className = 'airport-metric-value val-green'; return; }
+      el.className = 'airport-metric-value' + (c < 500 ? ' val-red' : c < 1000 ? ' val-amber' : c >= 3000 ? ' val-green' : '');
+    }
+    // Category color for card accent
+    const CAT_COLORS = {
+      VFR: '#34d399', MVFR: '#60a5fa', IFR: '#f87171', LIFR: '#e879f9'
+    };
+
     // ── Format Observation Time ──
     function fmtObs(t) {
       if (!t) return '';
@@ -1329,6 +1374,13 @@
           const catEl = el('cat');
           catEl.textContent = cat;
           catEl.className = 'airport-conditions ' + catCls;
+          // Color-code critical values
+          colorWind(el('wind'), obs.wspd || 0, obs.wgst || 0);
+          colorVis(el('vis'), vis);
+          colorCeil(el('ceil'), ceil);
+          // Card accent border by flight category
+          const card = el('cat').closest('.airport-card');
+          if (card) card.style.setProperty('--card-cat-color', CAT_COLORS[cat] || 'transparent');
         }
       }
     }
