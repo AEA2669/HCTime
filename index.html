@@ -604,6 +604,22 @@
     text-shadow: 0 0 10px rgba(56,189,248,0.2);
   }
 
+  /* ── Alert Page Mini Buttons ── */
+  .alert-btns { display: flex; gap: 0.3vw; align-items: center; }
+  .alert-btn {
+    text-decoration: none;
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    padding: 0.2vh 0.35vw;
+    border-radius: 0.3vmin;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    line-height: 1;
+    transition: all 0.25s ease;
+    cursor: pointer;
+  }
+  .alert-btn:hover { color: var(--text-muted); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); transform: scale(1.1); }
+
   /* ── Settings Button ── */
   .settings-btn {
     background: rgba(255,255,255,0.04);
@@ -1099,6 +1115,12 @@
       <span id="date-display"></span>
     </div>
     <div style="display:flex;align-items:center;gap:1vw;">
+      <div class="alert-btns">
+        <a href="Clocks.html" class="alert-btn" title="Clocks">&#128368;</a>
+        <a href="Ramp%20Closed.html" class="alert-btn" title="Ramp Closed">&#9940;</a>
+        <a href="Yellow%20Alert.html" class="alert-btn" title="Yellow Alert">&#9889;</a>
+        <a href="High%20Winds.html" class="alert-btn" title="High Winds">&#128168;</a>
+      </div>
       <span class="clock" id="live-clock">--:--:--</span>
       <button class="settings-btn" id="settings-btn" title="Settings">
         <span class="gear-icon">&#9881;</span> SETTINGS
