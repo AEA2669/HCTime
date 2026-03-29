@@ -1277,8 +1277,11 @@
       dfw: 'KDFW', clt: 'KCLT', ord: 'KORD', mia: 'KMIA',
       lax: 'KLAX', jfk: 'KJFK', lhr: 'EGLL', akl: 'NZAA'
     };
-    const WX_PROXY = 'https://corsproxy.io/?url=';
     const WX_BASE  = 'https://aviationweather.gov/api/data/metar';
+    const WX_PROXIES = [
+      '',  // try direct first (aviationweather.gov supports CORS)
+      'https://api.allorigins.win/raw?url='
+    ];
     const WPOLL = 5 * 60 * 1000;     // poll every 5 min
     const STALE_MS = 15 * 60 * 1000; // stale after 15 min
     const FETCH_TIMEOUT = 30000;      // 30s fetch timeout
@@ -1570,42 +1573,46 @@
     // ── Fetch Weather ──
     async function fetchWx() {
       const ids = Object.values(STATIONS).join(',');
-      const url = WX_PROXY + encodeURIComponent(
-        WX_BASE + '?ids=' + ids + '&format=json&hours=1'
-      );
-      try {
-        // AbortController with timeout to prevent hanging fetches
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      const directUrl = WX_BASE + '?ids=' + ids + '&format=json&hours=1';
 
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
+      for (const proxy of WX_PROXIES) {
+        const url = proxy ? proxy + encodeURIComponent(directUrl) : directUrl;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-        // Build lookup: latest per station
-        const latest = {};
-        if (Array.isArray(data)) {
-          data.forEach(ob => {
-            if (ob.icaoId) latest[ob.icaoId] = ob;
-          });
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+
+          // Build lookup: latest per station
+          const latest = {};
+          if (Array.isArray(data)) {
+            data.forEach(ob => {
+              if (ob.icaoId) latest[ob.icaoId] = ob;
+            });
+          }
+
+          applyWx(latest);
+          lastWxFetch = Date.now();
+          consecutiveFetchErrors = 0;
+          wxStatus.textContent = 'WX: LIVE';
+          wxStatus.className = 'wx-ok';
+          return; // success — stop trying proxies
+        } catch(e) {
+          console.warn('Weather fetch failed (' + (proxy || 'direct') + '):', e.message);
         }
+      }
 
-        applyWx(latest);
-        lastWxFetch = Date.now();
-        consecutiveFetchErrors = 0;
-        wxStatus.textContent = 'WX: LIVE';
-        wxStatus.className = 'wx-ok';
-      } catch(e) {
-        console.error('Weather fetch error:', e);
-        consecutiveFetchErrors++;
-        wxStatus.textContent = 'WX: ERROR (' + consecutiveFetchErrors + ')';
-        wxStatus.className = 'wx-stale';
-        // Auto-reload after too many consecutive failures
-        if (consecutiveFetchErrors >= MAX_CONSECUTIVE_ERRORS) {
-          console.warn('Too many consecutive fetch errors, reloading page...');
-          location.reload();
-        }
+      // All sources failed
+      consecutiveFetchErrors++;
+      console.error('Weather fetch error: all sources failed');
+      wxStatus.textContent = 'WX: ERROR (' + consecutiveFetchErrors + ')';
+      wxStatus.className = 'wx-stale';
+      if (consecutiveFetchErrors >= MAX_CONSECUTIVE_ERRORS) {
+        console.warn('Too many consecutive fetch errors, reloading page...');
+        location.reload();
       }
     }
 
