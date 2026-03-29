@@ -749,9 +749,9 @@
 
     const STATION       = 'KDFW';
     const FIELD_ELEV_FT = 607;
-    const WX_PROXY      = 'https://corsproxy.io/?url=';
     const WX_BASE       = 'https://aviationweather.gov/api/data/metar';
     const TAF_BASE      = 'https://aviationweather.gov/api/data/taf';
+    const WX_PROXIES    = ['', 'https://api.allorigins.win/raw?url='];
     const POLL_MS       = 5 * 60 * 1000;
     const FETCH_TIMEOUT = 30000;
     const MAX_ERRORS    = 10;
@@ -1061,16 +1061,28 @@
       $('taf-badge').textContent = issued ? 'Issued ' + fmtObs(issued) : '--';
     }
 
+    // ── Fetch with proxy fallback ──
+    async function fetchWithFallback(directUrl) {
+      for (const proxy of WX_PROXIES) {
+        const url = proxy ? proxy + encodeURIComponent(directUrl) : directUrl;
+        try {
+          const ctrl = new AbortController();
+          const tmr = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
+          const res = await fetch(url, { signal: ctrl.signal });
+          clearTimeout(tmr);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return await res.json();
+        } catch (e) {
+          console.warn('Fetch failed (' + (proxy || 'direct') + '):', e.message);
+        }
+      }
+      throw new Error('All sources failed');
+    }
+
     // ── Fetch METAR ──
     async function fetchMetar() {
-      const url = WX_PROXY + encodeURIComponent(WX_BASE + '?ids=' + STATION + '&format=json&hours=1');
       try {
-        const ctrl = new AbortController();
-        const tmr = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
-        const res = await fetch(url, { signal: ctrl.signal });
-        clearTimeout(tmr);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
+        const data = await fetchWithFallback(WX_BASE + '?ids=' + STATION + '&format=json&hours=1');
         if (Array.isArray(data) && data.length > 0) {
           applyMetar(data[0]);
           $('status-dot').classList.remove('error');
@@ -1086,14 +1098,8 @@
 
     // ── Fetch TAF ──
     async function fetchTaf() {
-      const url = WX_PROXY + encodeURIComponent(TAF_BASE + '?ids=' + STATION + '&format=json');
       try {
-        const ctrl = new AbortController();
-        const tmr = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
-        const res = await fetch(url, { signal: ctrl.signal });
-        clearTimeout(tmr);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
+        const data = await fetchWithFallback(TAF_BASE + '?ids=' + STATION + '&format=json');
         applyTaf(data);
       } catch (e) {
         console.error('TAF fetch error:', e);
