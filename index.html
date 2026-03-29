@@ -522,7 +522,7 @@
   }
 
   .airport-metrics {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 0.4vh 0.5vw;
   }
   .airport-metric {
@@ -928,16 +928,21 @@
             <div class="hero-metric">
               <div class="hero-metric-label">Temp</div>
               <div class="hero-metric-value" id="dfw-temp">--</div>
-              <div class="hero-metric-unit">&deg;C</div>
+              <div class="hero-metric-unit">&deg;F</div>
             </div>
             <div class="hero-metric">
               <div class="hero-metric-label">Dewpt</div>
               <div class="hero-metric-value" id="dfw-dewpt">--</div>
-              <div class="hero-metric-unit">&deg;C</div>
+              <div class="hero-metric-unit">&deg;F</div>
             </div>
             <div class="hero-metric">
               <div class="hero-metric-label">Wind</div>
               <div class="hero-metric-value" id="dfw-wind">--</div>
+              <div class="hero-metric-unit">kt</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Gust</div>
+              <div class="hero-metric-value" id="dfw-gust">--</div>
               <div class="hero-metric-unit">kt</div>
             </div>
             <div class="hero-metric">
@@ -954,6 +959,11 @@
               <div class="hero-metric-label">Altimeter</div>
               <div class="hero-metric-value" id="dfw-alt">--</div>
               <div class="hero-metric-unit">inHg</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Humidity</div>
+              <div class="hero-metric-value" id="dfw-hum">--</div>
+              <div class="hero-metric-unit">%</div>
             </div>
           </div>
           <div class="hero-metar-raw" id="dfw-metar">Fetching METAR...</div>
@@ -975,9 +985,11 @@
               <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="clt-temp">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="clt-dewpt">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="clt-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="clt-gust">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="clt-vis">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="clt-ceil">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="clt-alt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="clt-hum">--</span></div>
             </div>
             <div class="airport-metar-raw" id="clt-metar">--</div>
           </div>
@@ -995,9 +1007,11 @@
               <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="ord-temp">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="ord-dewpt">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="ord-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="ord-gust">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="ord-vis">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="ord-ceil">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="ord-alt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="ord-hum">--</span></div>
             </div>
             <div class="airport-metar-raw" id="ord-metar">--</div>
           </div>
@@ -1015,9 +1029,11 @@
               <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="mia-temp">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="mia-dewpt">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="mia-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="mia-gust">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="mia-vis">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="mia-ceil">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="mia-alt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="mia-hum">--</span></div>
             </div>
             <div class="airport-metar-raw" id="mia-metar">--</div>
           </div>
@@ -1035,9 +1051,11 @@
               <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="lax-temp">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="lax-dewpt">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="lax-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="lax-gust">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="lax-vis">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="lax-ceil">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="lax-alt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="lax-hum">--</span></div>
             </div>
             <div class="airport-metar-raw" id="lax-metar">--</div>
           </div>
@@ -1055,9 +1073,11 @@
               <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="jfk-temp">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="jfk-dewpt">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="jfk-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="jfk-gust">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="jfk-vis">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="jfk-ceil">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="jfk-alt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="jfk-hum">--</span></div>
             </div>
             <div class="airport-metar-raw" id="jfk-metar">--</div>
           </div>
@@ -1075,9 +1095,11 @@
               <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="lhr-temp">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="lhr-dewpt">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="lhr-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="lhr-gust">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="lhr-vis">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="lhr-ceil">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="lhr-alt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="lhr-hum">--</span></div>
             </div>
             <div class="airport-metar-raw" id="lhr-metar">--</div>
           </div>
@@ -1095,9 +1117,11 @@
               <div class="airport-metric"><span class="airport-metric-label">Temp</span><span class="airport-metric-value" id="akl-temp">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="akl-dewpt">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="akl-wind">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="akl-gust">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="akl-vis">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="akl-ceil">--</span></div>
               <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="akl-alt">--</span></div>
+              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="akl-hum">--</span></div>
             </div>
             <div class="airport-metar-raw" id="akl-metar">--</div>
           </div>
@@ -1535,21 +1559,32 @@
       } catch(e) { return ''; }
     }
 
+    // ── Calculate relative humidity from temp and dewpoint (Magnus formula) ──
+    function calcHumidity(tempC, dewpC) {
+      if (tempC === null || tempC === undefined || dewpC === null || dewpC === undefined) return '--';
+      const a = 17.625, b = 243.04;
+      const rh = 100 * Math.exp((a * dewpC) / (b + dewpC)) / Math.exp((a * tempC) / (b + tempC));
+      return Math.round(Math.min(100, Math.max(0, rh)));
+    }
+
     // ── Apply Weather Data ──
     function applyWx(latest) {
       for (const [key, icao] of Object.entries(STATIONS)) {
         const obs = latest[icao];
         if (!obs) continue;
 
-        const temp   = obs.temp !== undefined && obs.temp !== null ? Math.round(obs.temp) : '--';
-        const dewpt  = obs.dewp !== undefined && obs.dewp !== null ? Math.round(obs.dewp) : '--';
+        const tempC  = obs.temp !== undefined && obs.temp !== null ? obs.temp : null;
+        const dewpC  = obs.dewp !== undefined && obs.dewp !== null ? obs.dewp : null;
+        const temp   = tempC !== null ? Math.round(tempC * 9/5 + 32) : '--';
+        const dewpt  = dewpC !== null ? Math.round(dewpC * 9/5 + 32) : '--';
         const wdir   = obs.wdir !== undefined ? (obs.wdir === 0 && obs.wspd === 0 ? 'VRB' : pad3(obs.wdir)) : '--';
         const wspd   = obs.wspd !== undefined && obs.wspd !== null ? Math.round(obs.wspd) : '--';
-        const wgst   = obs.wgst ? 'G' + Math.round(obs.wgst) : '';
-        const windStr = wdir + '\u00B0/' + wspd + wgst;
+        const windStr = wdir + '\u00B0/' + wspd;
+        const gustStr = obs.wgst ? Math.round(obs.wgst) : '--';
         const vis    = obs.visib !== undefined && obs.visib !== null ? obs.visib : '--';
         const ceil   = getCeiling(obs.clouds);
         const alt    = obs.altim ? (obs.altim * 0.02953).toFixed(2) : '--';
+        const hum    = calcHumidity(tempC, dewpC);
         const cat    = (obs.fltcat || '---').toUpperCase();
         const catCls = 'cat-' + cat.toLowerCase();
         const icon   = getWxIcon(obs.wxString, obs.clouds);
@@ -1559,9 +1594,11 @@
           $('dfw-temp').textContent   = temp;
           $('dfw-dewpt').textContent  = dewpt;
           $('dfw-wind').textContent   = windStr;
+          $('dfw-gust').textContent   = gustStr;
           $('dfw-vis').textContent    = vis;
           $('dfw-ceil').textContent   = ceil;
           $('dfw-alt').textContent    = alt;
+          $('dfw-hum').textContent    = hum;
           $('dfw-metar').textContent  = raw;
           $('dfw-obs').textContent    = fmtObs(obs.obsTime || obs.reportTime);
           const catEl = $('dfw-cat');
@@ -1573,9 +1610,11 @@
           el('temp').textContent   = temp;
           el('dewpt').textContent  = dewpt;
           el('wind').textContent   = windStr;
+          el('gust').textContent   = gustStr;
           el('vis').textContent    = vis;
           el('ceil').textContent   = ceil;
           el('alt').textContent    = alt;
+          el('hum').textContent    = hum;
           el('metar').textContent  = raw;
           el('icon').textContent   = icon;
           const catEl = el('cat');
