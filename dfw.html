@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DFW Weather Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary:    #060a14;
+    --bg-card:       rgba(15, 23, 42, 0.65);
+    --bg-card-alt:   rgba(22, 33, 55, 0.55);
+    --bg-card-hover: rgba(30, 42, 66, 0.7);
+    --bg-metric:     rgba(255, 255, 255, 0.02);
+    --border-color:  rgba(56, 189, 248, 0.08);
+    --border-glow:   rgba(56, 189, 248, 0.22);
+    --text-primary:  #e2e8f0;
+    --text-secondary:#94a3b8;
+    --text-muted:    #64748b;
+    --text-dim:      #475569;
+    --accent:        #38bdf8;
+    --accent-glow:   rgba(56, 189, 248, 0.35);
+    --accent-green:  #34d399;
+    --accent-amber:  #fbbf24;
+    --accent-red:    #f87171;
+    --accent-purple: #a78bfa;
+    --glass-blur:    blur(20px);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100vw; height: 100vh; overflow: hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  /* ── Animated Background ── */
+  .bg-mesh {
+    position: fixed; inset: 0; z-index: 0;
+    overflow: hidden; pointer-events: none;
+  }
+  .bg-mesh::before, .bg-mesh::after {
+    content: ''; position: absolute;
+    border-radius: 50%; filter: blur(140px); opacity: 0.3;
+  }
+  .bg-mesh::before {
+    width: 60vw; height: 60vw;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.4), transparent 70%);
+    top: -25%; left: -15%;
+    animation: drift1 28s ease-in-out infinite alternate;
+  }
+  .bg-mesh::after {
+    width: 50vw; height: 50vw;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.35), transparent 70%);
+    bottom: -20%; right: -10%;
+    animation: drift2 32s ease-in-out infinite alternate;
+  }
+  .bg-orb {
+    position: absolute; border-radius: 50%; filter: blur(130px); pointer-events: none;
+  }
+  .bg-orb-1 {
+    width: 40vw; height: 40vw; opacity: 0.15;
+    background: radial-gradient(circle, rgba(52, 211, 153, 0.25), transparent 70%);
+    top: 50%; left: 25%;
+    animation: drift3 24s ease-in-out infinite alternate;
+  }
+  .bg-orb-2 {
+    width: 35vw; height: 35vw; opacity: 0.12;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.15), transparent 70%);
+    top: 5%; right: 15%;
+    animation: drift4 30s ease-in-out infinite alternate;
+  }
+  @keyframes drift1 { to { transform: translate(5vw, 7vh) scale(1.15); } }
+  @keyframes drift2 { to { transform: translate(-6vw, -5vh) scale(1.1); } }
+  @keyframes drift3 { to { transform: translate(7vw, -6vh) scale(0.9); } }
+  @keyframes drift4 { to { transform: translate(-4vw, 5vh) scale(1.1); } }
+
+  /* ── Scanlines ── */
+  .scanlines {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+  }
+
+  /* ── Layout ── */
+  .page {
+    position: relative; z-index: 1;
+    width: 100vw; height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+  }
+
+  /* ── Top Bar ── */
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2vh 2vw;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(6, 10, 20, 0.6);
+    backdrop-filter: blur(16px);
+  }
+  .top-bar-left {
+    display: flex; align-items: center; gap: 1vw;
+  }
+  .back-link {
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    color: var(--text-muted); text-decoration: none;
+    padding: 0.3vh 0.6vw;
+    border: 1px solid var(--border-color);
+    border-radius: 0.4vmin;
+    transition: all 0.3s ease;
+    letter-spacing: 0.05vw;
+  }
+  .back-link:hover {
+    color: var(--accent); border-color: var(--border-glow);
+    box-shadow: 0 0 12px rgba(56,189,248,0.1);
+  }
+  .page-title-group { display: flex; align-items: baseline; gap: 0.6vw; }
+  .page-icao {
+    font-size: clamp(2rem, 4vmin, 4rem);
+    font-weight: 900; color: var(--accent);
+    text-shadow: 0 0 30px var(--accent-glow);
+    letter-spacing: 0.08vw;
+  }
+  .page-airport-name {
+    font-size: clamp(0.8rem, 1.4vmin, 1.3rem);
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.2vw; font-weight: 600;
+  }
+  .top-bar-right {
+    display: flex; align-items: center; gap: 1.2vw;
+  }
+  .obs-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    color: var(--text-dim); padding: 0.25vh 0.6vw;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 0.4vmin;
+  }
+  .status-dot {
+    width: clamp(0.6rem, 1.1vmin, 1rem);
+    height: clamp(0.6rem, 1.1vmin, 1rem);
+    border-radius: 50%; background: var(--accent-green);
+    box-shadow: 0 0 8px rgba(52,211,153,0.5);
+    animation: statusPulse 2s ease-in-out infinite;
+  }
+  .status-dot.error { background: var(--accent-red); box-shadow: 0 0 8px rgba(248,113,113,0.5); }
+  @keyframes statusPulse {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.5; }
+  }
+  .live-clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.9rem, 1.6vmin, 1.5rem);
+    color: var(--accent); font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 10px rgba(56,189,248,0.2);
+  }
+
+  /* ── Main Content ── */
+  .content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 1vh 1vw;
+    padding: 1.2vh 1.5vw;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(56,189,248,0.15) transparent;
+  }
+
+  /* ── Glass Card ── */
+  .card {
+    background: var(--bg-card);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-color);
+    border-radius: 1vmin;
+    padding: 1.5vh 1.2vw;
+    position: relative; overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(56,189,248,0.04);
+    animation: cardIn 0.7s ease-out both;
+  }
+  .card:nth-child(2) { animation-delay: 0.08s; }
+  .card:nth-child(3) { animation-delay: 0.16s; }
+  .card:nth-child(4) { animation-delay: 0.24s; }
+  .card:nth-child(5) { animation-delay: 0.32s; }
+  .card.full-width { grid-column: 1 / -1; }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1vh;
+    padding-bottom: 0.6vh;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .card-title {
+    font-size: clamp(0.8rem, 1.3vmin, 1.2rem);
+    text-transform: uppercase; letter-spacing: 0.25vw;
+    color: var(--text-muted); font-weight: 700;
+  }
+  .card-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.6rem, 1vmin, 0.95rem);
+    color: var(--text-dim); padding: 0.2vh 0.4vw;
+    background: rgba(255,255,255,0.03);
+    border-radius: 0.3vmin;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* ── Corner Accents ── */
+  .card.accent-corners::before {
+    content: ''; position: absolute; top: -1px; left: -1px;
+    width: 40px; height: 40px;
+    border-top: 2px solid var(--accent); border-left: 2px solid var(--accent);
+    border-radius: 1vmin 0 0 0; opacity: 0.25;
+  }
+  .card.accent-corners::after {
+    content: ''; position: absolute; bottom: -1px; right: -1px;
+    width: 40px; height: 40px;
+    border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent);
+    border-radius: 0 0 1vmin 0; opacity: 0.25;
+  }
+
+  /* ── Hero Card ── */
+  .hero-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0 2vw; align-items: center;
+  }
+  .hero-icon {
+    font-size: clamp(4rem, 10vmin, 10rem);
+    line-height: 1;
+    filter: drop-shadow(0 0 12px rgba(255,255,255,0.12));
+  }
+  .hero-center { display: flex; flex-direction: column; gap: 0.3vh; }
+  .hero-cat-badge {
+    display: inline-flex; align-self: flex-start;
+    font-size: clamp(1rem, 2vmin, 1.9rem);
+    font-weight: 800; padding: 0.3vh 0.8vw;
+    border-radius: 0.5vmin; letter-spacing: 0.08vw;
+  }
+  .hero-wx-string {
+    font-size: clamp(0.9rem, 1.5vmin, 1.4rem);
+    color: var(--text-secondary); font-weight: 500;
+  }
+  .hero-wx-string.none { color: var(--text-dim); font-style: italic; }
+  .hero-temp-group {
+    display: flex; align-items: baseline; gap: 0.8vw;
+  }
+  .hero-temp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(4rem, 9vmin, 9rem);
+    font-weight: 700; line-height: 1;
+    color: var(--text-primary);
+  }
+  .hero-temp-unit {
+    font-size: clamp(1.5rem, 3vmin, 3rem);
+    color: var(--text-muted); font-weight: 400;
+  }
+  .hero-dewpt-line {
+    font-size: clamp(0.8rem, 1.4vmin, 1.3rem);
+    color: var(--text-muted);
+  }
+  .hero-dewpt-line span {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-purple); font-weight: 600;
+  }
+
+  /* ── Flight Category Colors ── */
+  .cat-vfr  { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+  .cat-mvfr { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.25); }
+  .cat-ifr  { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+  .cat-lifr { background: rgba(232,121,249,0.15); color: #e879f9; border: 1px solid rgba(232,121,249,0.25); }
+
+  /* ── Metric Rows ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8vh 1.2vw;
+  }
+  .metric-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
+
+  .metric-item {
+    display: flex; flex-direction: column;
+    padding: 0.8vh 0.8vw;
+    background: var(--bg-metric);
+    border: 1px solid rgba(255,255,255,0.025);
+    border-radius: 0.5vmin;
+    transition: border-color 0.3s ease;
+  }
+  .metric-item:hover {
+    border-color: rgba(56,189,248,0.08);
+  }
+  .metric-label {
+    font-size: clamp(0.65rem, 1.1vmin, 1rem);
+    text-transform: uppercase; letter-spacing: 0.12vw;
+    color: var(--text-dim); margin-bottom: 0.2vh;
+    font-weight: 600;
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1.4rem, 3vmin, 3rem);
+    font-weight: 700; color: var(--text-primary); line-height: 1.1;
+  }
+  .metric-sub {
+    font-size: clamp(0.55rem, 0.9vmin, 0.85rem);
+    color: var(--text-dim); margin-top: 0.15vh;
+  }
+
+  /* ── Wind Compass ── */
+  .wind-display {
+    display: flex; align-items: center; gap: 1.5vw;
+  }
+  .compass-wrap {
+    position: relative;
+    width: clamp(8rem, 16vmin, 16rem);
+    height: clamp(8rem, 16vmin, 16rem);
+    flex-shrink: 0;
+  }
+  .compass-ring {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(56,189,248,0.12);
+    position: relative;
+  }
+  .compass-mark {
+    position: absolute; font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    color: var(--text-dim); font-weight: 600;
+  }
+  .compass-mark.n { top: 4%; left: 50%; transform: translateX(-50%); color: var(--accent); }
+  .compass-mark.e { top: 50%; right: 4%; transform: translateY(-50%); }
+  .compass-mark.s { bottom: 4%; left: 50%; transform: translateX(-50%); }
+  .compass-mark.w { top: 50%; left: 4%; transform: translateY(-50%); }
+  .compass-needle {
+    position: absolute; top: 50%; left: 50%;
+    width: 3px; height: 40%;
+    background: linear-gradient(to top, transparent, var(--accent));
+    transform-origin: bottom center;
+    transform: translateX(-50%) translateY(-100%) rotate(0deg);
+    border-radius: 2px;
+    transition: transform 1s ease;
+    box-shadow: 0 0 8px var(--accent-glow);
+  }
+  .compass-center {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(0.6rem, 1.1vmin, 1rem);
+    height: clamp(0.6rem, 1.1vmin, 1rem);
+    background: var(--accent); border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+  .wind-details {
+    display: flex; flex-direction: column; gap: 0.6vh;
+    flex: 1;
+  }
+  .wind-primary {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2rem, 4.5vmin, 4.5rem);
+    font-weight: 700; color: var(--text-primary); line-height: 1;
+  }
+  .wind-secondary {
+    font-size: clamp(0.75rem, 1.3vmin, 1.2rem);
+    color: var(--text-muted);
+  }
+  .wind-secondary span {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600; color: var(--text-secondary);
+  }
+  .gust-alert {
+    display: inline-flex; align-items: center; gap: 0.3vw;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.85rem, 1.5vmin, 1.4rem);
+    font-weight: 700; color: var(--accent-amber);
+    padding: 0.2vh 0.5vw;
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 0.4vmin;
+    text-shadow: 0 0 8px rgba(251,191,36,0.2);
+  }
+  .gust-alert.hidden { display: none; }
+
+  /* ── Cloud Layers Table ── */
+  .cloud-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .cloud-table th {
+    font-size: clamp(0.6rem, 1vmin, 0.95rem);
+    text-transform: uppercase; letter-spacing: 0.1vw;
+    color: var(--text-dim); font-weight: 700;
+    text-align: left; padding: 0.4vh 0.5vw;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .cloud-table td {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.75rem, 1.3vmin, 1.2rem);
+    color: var(--text-primary); padding: 0.5vh 0.5vw;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+  }
+  .cloud-table tr:last-child td { border-bottom: none; }
+  .cloud-cover-badge {
+    display: inline-block;
+    padding: 0.15vh 0.45vw; border-radius: 0.3vmin;
+    font-weight: 700; font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+  }
+  .cover-clr  { background: rgba(52,211,153,0.1); color: #34d399; }
+  .cover-few  { background: rgba(52,211,153,0.08); color: #6ee7b7; }
+  .cover-sct  { background: rgba(96,165,250,0.1); color: #93c5fd; }
+  .cover-bkn  { background: rgba(251,191,36,0.1); color: #fcd34d; }
+  .cover-ovc  { background: rgba(248,113,113,0.1); color: #fca5a5; }
+
+  /* ── Humidity Bar ── */
+  .humidity-bar-wrap {
+    display: flex; align-items: center; gap: 0.6vw; margin-top: 0.3vh;
+  }
+  .humidity-bar-track {
+    flex: 1; height: clamp(0.5rem, 1vmin, 0.9rem);
+    background: rgba(255,255,255,0.04);
+    border-radius: 1rem; overflow: hidden;
+  }
+  .humidity-bar-fill {
+    height: 100%; border-radius: 1rem;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent), var(--accent-purple));
+    transition: width 1s ease;
+  }
+  .humidity-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1rem, 1.8vmin, 1.7rem);
+    font-weight: 700; color: var(--accent-purple);
+    min-width: 3ch;
+  }
+
+  /* ── Raw METAR ── */
+  .raw-metar-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 0.5vmin;
+    padding: 0.8vh 0.8vw;
+    line-height: 1.6;
+    word-break: break-all;
+  }
+
+  /* ── TAF Box ── */
+  .taf-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.65rem, 1.1vmin, 1rem);
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 0.5vmin;
+    padding: 0.8vh 0.8vw;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 20vh; overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(56,189,248,0.12) transparent;
+  }
+
+  /* ── Pressure Gauge ── */
+  .pressure-display {
+    display: flex; align-items: center; gap: 1.2vw;
+  }
+  .pressure-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2.5rem, 5.5vmin, 5.5rem);
+    font-weight: 700; color: var(--text-primary); line-height: 1;
+  }
+  .pressure-big .unit {
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    color: var(--text-dim); font-weight: 500;
+    display: block;
+  }
+  .pressure-conversions {
+    display: flex; flex-direction: column; gap: 0.3vh;
+  }
+  .press-conv {
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    color: var(--text-muted);
+  }
+  .press-conv span {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600; color: var(--text-secondary);
+  }
+
+  /* ── Density Altitude / Performance ── */
+  .perf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.6vh 0.8vw;
+  }
+  .perf-item {
+    text-align: center;
+    padding: 0.6vh 0.4vw;
+    background: rgba(255,255,255,0.015);
+    border: 1px solid rgba(255,255,255,0.02);
+    border-radius: 0.4vmin;
+  }
+  .perf-label {
+    font-size: clamp(0.6rem, 1vmin, 0.95rem);
+    text-transform: uppercase; letter-spacing: 0.08vw;
+    color: var(--text-dim); margin-bottom: 0.2vh;
+  }
+  .perf-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1.1rem, 2.2vmin, 2.2rem);
+    font-weight: 700; color: var(--text-primary);
+  }
+  .perf-sub {
+    font-size: clamp(0.5rem, 0.85vmin, 0.8rem);
+    color: var(--text-dim);
+  }
+
+  /* ── Bottom Bar ── */
+  .bottom-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6vh 2vw;
+    border-top: 1px solid var(--border-color);
+    background: rgba(6,10,20,0.7);
+    backdrop-filter: blur(12px);
+    font-size: clamp(0.65rem, 1.1vmin, 1rem);
+    color: var(--text-dim);
+  }
+  .bottom-bar a {
+    color: var(--text-muted); text-decoration: none;
+  }
+  .bottom-bar a:hover { color: var(--accent); }
+
+  /* ── Loading State ── */
+  .loading-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--bg-primary);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1.5vh;
+    transition: opacity 0.6s ease;
+  }
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .loading-spinner {
+    width: clamp(2rem, 4vmin, 3.5rem);
+    height: clamp(2rem, 4vmin, 3.5rem);
+    border: 3px solid rgba(56,189,248,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-size: clamp(0.9rem, 1.5vmin, 1.4rem);
+    color: var(--text-muted); letter-spacing: 0.15vw;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-mesh">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+  </div>
+  <div class="scanlines"></div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Fetching KDFW METAR &amp; TAF...</div>
+  </div>
+
+  <div class="page">
+    <!-- ── Top Bar ── -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <a href="index.html" class="back-link">&larr; DASHBOARD</a>
+        <div class="page-title-group">
+          <span class="page-icao">KDFW</span>
+          <span class="page-airport-name">Dallas / Fort Worth International</span>
+        </div>
+      </div>
+      <div class="top-bar-right">
+        <span class="obs-badge" id="obs-time">--</span>
+        <div class="status-dot" id="status-dot"></div>
+        <span class="live-clock" id="clock">--:--:--</span>
+      </div>
+    </div>
+
+    <!-- ── Main Content ── -->
+    <div class="content">
+
+      <!-- ROW 1: Hero Overview + Wind -->
+      <div class="card accent-corners" id="card-hero">
+        <div class="card-header">
+          <span class="card-title">Current Conditions</span>
+          <span class="card-badge" id="hero-age"></span>
+        </div>
+        <div class="hero-row">
+          <div class="hero-icon" id="hero-icon">--</div>
+          <div class="hero-center">
+            <span class="hero-cat-badge" id="hero-cat">---</span>
+            <span class="hero-wx-string" id="hero-wx">Loading...</span>
+            <div class="hero-temp-group">
+              <span class="hero-temp" id="hero-temp">--</span>
+              <span class="hero-temp-unit">&deg;C</span>
+            </div>
+            <div class="hero-dewpt-line">Dewpoint <span id="hero-dewpt">--</span>&deg;C</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.3vh;">
+            <div class="humidity-pct" id="hero-rh">--%</div>
+            <div class="humidity-bar-wrap" style="width: clamp(3rem,6vw,5rem);">
+              <div class="humidity-bar-track">
+                <div class="humidity-bar-fill" id="hero-rh-bar" style="width:0%"></div>
+              </div>
+            </div>
+            <div style="font-size:clamp(0.6rem,1vmin,0.9rem);color:var(--text-dim);text-transform:uppercase;">Humidity</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="card-wind">
+        <div class="card-header">
+          <span class="card-title">Wind</span>
+          <span class="gust-alert hidden" id="gust-badge">GUSTS</span>
+        </div>
+        <div class="wind-display">
+          <div class="compass-wrap">
+            <div class="compass-ring">
+              <span class="compass-mark n">N</span>
+              <span class="compass-mark e">E</span>
+              <span class="compass-mark s">S</span>
+              <span class="compass-mark w">W</span>
+              <div class="compass-needle" id="compass-needle"></div>
+              <div class="compass-center"></div>
+            </div>
+          </div>
+          <div class="wind-details">
+            <div class="wind-primary" id="wind-primary">-- / -- kt</div>
+            <div class="wind-secondary">Direction: <span id="wind-dir-deg">--</span>&deg;</div>
+            <div class="wind-secondary">Speed: <span id="wind-spd">--</span> kt (<span id="wind-mph">--</span> mph)</div>
+            <div class="wind-secondary" id="wind-gust-line" style="display:none;">Gusts: <span id="wind-gust">--</span> kt (<span id="wind-gust-mph">--</span> mph)</div>
+            <div class="wind-secondary" id="wind-vrb-line" style="display:none;">Variable: <span id="wind-vrb">--</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 2: Visibility & Ceiling + Pressure & Performance -->
+      <div class="card" id="card-vis-ceil">
+        <div class="card-header">
+          <span class="card-title">Visibility &amp; Ceiling</span>
+        </div>
+        <div class="metric-grid">
+          <div class="metric-item">
+            <span class="metric-label">Visibility</span>
+            <span class="metric-value" id="vis-val">--</span>
+            <span class="metric-sub" id="vis-sub">statute miles</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Ceiling</span>
+            <span class="metric-value" id="ceil-val">--</span>
+            <span class="metric-sub" id="ceil-sub">feet AGL</span>
+          </div>
+        </div>
+        <div class="card-header" style="margin-top:1vh;">
+          <span class="card-title">Cloud Layers</span>
+          <span class="card-badge" id="cloud-count">--</span>
+        </div>
+        <table class="cloud-table" id="cloud-table">
+          <thead><tr><th>Cover</th><th>Base (ft)</th><th>Type</th></tr></thead>
+          <tbody id="cloud-tbody">
+            <tr><td colspan="3" style="color:var(--text-dim);">Waiting...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" id="card-pressure">
+        <div class="card-header">
+          <span class="card-title">Pressure &amp; Altimetry</span>
+        </div>
+        <div class="pressure-display">
+          <div class="pressure-big" id="press-inhg">--<span class="unit">inHg</span></div>
+          <div class="pressure-conversions">
+            <div class="press-conv">hPa: <span id="press-hpa">--</span></div>
+            <div class="press-conv">mmHg: <span id="press-mmhg">--</span></div>
+            <div class="press-conv">Sea Level: <span id="press-slp">--</span> hPa</div>
+          </div>
+        </div>
+        <div class="card-header" style="margin-top:1vh;">
+          <span class="card-title">Performance Data</span>
+          <span class="card-badge">KDFW Elev: 607 ft</span>
+        </div>
+        <div class="perf-grid">
+          <div class="perf-item">
+            <div class="perf-label">Density Alt</div>
+            <div class="perf-value" id="dens-alt">--</div>
+            <div class="perf-sub">feet</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-label">Pressure Alt</div>
+            <div class="perf-value" id="press-alt">--</div>
+            <div class="perf-sub">feet</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-label">Spread</div>
+            <div class="perf-value" id="spread-val">--</div>
+            <div class="perf-sub">&deg;C (T-Td)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 3: Raw METAR + TAF -->
+      <div class="card" id="card-metar">
+        <div class="card-header">
+          <span class="card-title">Raw METAR</span>
+          <span class="card-badge" id="metar-age">--</span>
+        </div>
+        <div class="raw-metar-box" id="raw-metar">Fetching...</div>
+      </div>
+
+      <div class="card" id="card-taf">
+        <div class="card-header">
+          <span class="card-title">Terminal Aerodrome Forecast (TAF)</span>
+          <span class="card-badge" id="taf-badge">--</span>
+        </div>
+        <div class="taf-box" id="raw-taf">Fetching...</div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- ── Bottom Bar ── -->
+    <div class="bottom-bar">
+      <span>DFW Weather Intelligence &mdash; Auto-refresh 5 min</span>
+      <span>Data: <a href="https://aviationweather.gov" target="_blank" rel="noopener">aviationweather.gov</a></span>
+    </div>
+  </div><!-- /page -->
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════════
+       DFW WEATHER INTELLIGENCE — JS Engine
+       ═══════════════════════════════════════════════════════════════ */
+
+    const STATION       = 'KDFW';
+    const FIELD_ELEV_FT = 607;
+    const WX_BASE       = 'https://aviationweather.gov/api/data/metar';
+    const TAF_BASE      = 'https://aviationweather.gov/api/data/taf';
+    const WX_PROXIES    = ['', 'https://api.allorigins.win/raw?url='];
+    const POLL_MS       = 5 * 60 * 1000;
+    const FETCH_TIMEOUT = 30000;
+    const MAX_ERRORS    = 10;
+    const AUTO_RELOAD_MS = 12 * 60 * 60 * 1000;
+    const pageLoadTime  = Date.now();
+    let consecutiveErrors = 0;
+
+    const $ = id => document.getElementById(id);
+
+    // ── Helpers ──
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function pad3(n) { return String(n).padStart(3, '0'); }
+
+    // ── Clock ──
+    function tickClock() {
+      const now = new Date();
+      $('clock').textContent = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
+    }
+    setInterval(tickClock, 1000);
+    tickClock();
+
+    // ── Weather Icon ──
+    function getWxIcon(wx, clouds) {
+      const w = (wx || '').toLowerCase();
+      if (w.includes('ts') || w.includes('+ts'))  return '\u26C8\uFE0F';
+      if (w.includes('sn'))    return '\u2744\uFE0F';
+      if (w.includes('fz'))    return '\u{1F9CA}';
+      if (w.includes('ra') || w.includes('dz'))  return '\u{1F327}\uFE0F';
+      if (w.includes('fg'))    return '\u{1F32B}\uFE0F';
+      if (w.includes('br') || w.includes('hz'))  return '\u{1F32B}\uFE0F';
+      if (clouds) {
+        for (const c of clouds) {
+          if (c.cover === 'OVC' || c.cover === 'BKN') return '\u2601\uFE0F';
+          if (c.cover === 'SCT') return '\u26C5';
+          if (c.cover === 'FEW') return '\u{1F324}\uFE0F';
+        }
+      }
+      return '\u2600\uFE0F';
+    }
+
+    // ── Ceiling ──
+    function getCeiling(clouds) {
+      if (!clouds || clouds.length === 0) return { text: 'CLR', ft: Infinity };
+      let lowest = null;
+      for (const c of clouds) {
+        if (c.cover === 'BKN' || c.cover === 'OVC') {
+          const base = c.base || 0;
+          if (lowest === null || base < lowest) lowest = base;
+        }
+      }
+      if (lowest !== null) return { text: lowest.toLocaleString(), ft: lowest };
+      return { text: 'Unlimited', ft: Infinity };
+    }
+
+    // ── Relative Humidity ──
+    function calcRH(t, td) {
+      if (t === null || td === null) return null;
+      const rh = 100 * Math.exp((17.625 * td) / (243.04 + td)) / Math.exp((17.625 * t) / (243.04 + t));
+      return Math.round(Math.min(100, Math.max(0, rh)));
+    }
+
+    // ── Density Altitude ──
+    function calcDensityAlt(tempC, altimInHg) {
+      if (!tempC && tempC !== 0) return null;
+      if (!altimInHg) return null;
+      const pressAlt = FIELD_ELEV_FT + ((29.92 - altimInHg) * 1000);
+      const isaTemp = 15 - (pressAlt * 0.00198);
+      const da = pressAlt + (120 * (tempC - isaTemp));
+      return { da: Math.round(da), pa: Math.round(pressAlt) };
+    }
+
+    // ── Cloud Cover CSS Class ──
+    function coverClass(cover) {
+      switch (cover) {
+        case 'CLR': case 'SKC': case 'NCD': case 'NSC': return 'cover-clr';
+        case 'FEW': return 'cover-few';
+        case 'SCT': return 'cover-sct';
+        case 'BKN': return 'cover-bkn';
+        case 'OVC': return 'cover-ovc';
+        default: return '';
+      }
+    }
+
+    // ── Describe cloud cover ──
+    function coverDesc(cover) {
+      switch (cover) {
+        case 'CLR': case 'SKC': return 'Clear';
+        case 'NCD': return 'No Cloud Detected';
+        case 'NSC': return 'No Sig Cloud';
+        case 'FEW': return 'Few (1-2 oktas)';
+        case 'SCT': return 'Scattered (3-4 oktas)';
+        case 'BKN': return 'Broken (5-7 oktas)';
+        case 'OVC': return 'Overcast (8 oktas)';
+        default: return cover || '--';
+      }
+    }
+
+    // ── Human-readable weather string ──
+    function describeWx(wxString) {
+      if (!wxString) return null;
+      const map = {
+        '+TSRA': 'Heavy Thunderstorms w/ Rain',
+        'TSRA': 'Thunderstorms w/ Rain',
+        '-TSRA': 'Light Thunderstorms w/ Rain',
+        '+TS': 'Heavy Thunderstorms',
+        'TS': 'Thunderstorms',
+        '-TS': 'Light Thunderstorms',
+        '+RA': 'Heavy Rain',
+        'RA': 'Rain',
+        '-RA': 'Light Rain',
+        '+SN': 'Heavy Snow',
+        'SN': 'Snow',
+        '-SN': 'Light Snow',
+        'DZ': 'Drizzle',
+        '-DZ': 'Light Drizzle',
+        '+DZ': 'Heavy Drizzle',
+        'FZRA': 'Freezing Rain',
+        'FZDZ': 'Freezing Drizzle',
+        'FG': 'Fog',
+        'BR': 'Mist',
+        'HZ': 'Haze',
+        'FU': 'Smoke',
+        'DU': 'Dust',
+        'SA': 'Sand',
+        'BLSN': 'Blowing Snow',
+        'BLDU': 'Blowing Dust',
+        'SQ': 'Squall',
+        'FC': 'Funnel Cloud',
+        '+FC': 'Tornado/Waterspout',
+        'GR': 'Hail',
+        'GS': 'Small Hail',
+        'PL': 'Ice Pellets',
+        'SH': 'Showers',
+        '-SH': 'Light Showers',
+        'SHRA': 'Rain Showers',
+        '-SHRA': 'Light Rain Showers',
+        '+SHRA': 'Heavy Rain Showers',
+        'VCSH': 'Showers in Vicinity',
+        'VCTS': 'Thunderstorms in Vicinity',
+      };
+      const parts = wxString.trim().split(/\s+/);
+      const descs = parts.map(p => map[p] || p);
+      return descs.join(', ');
+    }
+
+    // ── Format obs time ──
+    function fmtObs(t) {
+      if (!t) return '--';
+      try {
+        const d = new Date(t);
+        return pad2(d.getUTCDate()) + '/' + pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + 'Z';
+      } catch(e) { return '--'; }
+    }
+
+    // ── Apply METAR ──
+    function applyMetar(ob) {
+      // Temps
+      const temp  = ob.temp !== undefined && ob.temp !== null ? Math.round(ob.temp) : null;
+      const dewpt = ob.dewp !== undefined && ob.dewp !== null ? Math.round(ob.dewp) : null;
+      $('hero-temp').textContent  = temp !== null ? temp : '--';
+      $('hero-dewpt').textContent = dewpt !== null ? dewpt : '--';
+
+      // Humidity
+      const rh = calcRH(ob.temp, ob.dewp);
+      $('hero-rh').textContent = rh !== null ? rh + '%' : '--%';
+      $('hero-rh-bar').style.width = rh !== null ? rh + '%' : '0%';
+
+      // Flight category
+      const cat = (ob.fltcat || '---').toUpperCase();
+      const catEl = $('hero-cat');
+      catEl.textContent = cat;
+      catEl.className = 'hero-cat-badge cat-' + cat.toLowerCase();
+
+      // Icon
+      $('hero-icon').textContent = getWxIcon(ob.wxString, ob.clouds);
+
+      // Weather string
+      const wxEl = $('hero-wx');
+      if (ob.wxString) {
+        wxEl.textContent = describeWx(ob.wxString);
+        wxEl.classList.remove('none');
+      } else {
+        wxEl.textContent = 'No significant weather';
+        wxEl.classList.add('none');
+      }
+
+      // Obs time
+      const obsStr = fmtObs(ob.obsTime || ob.reportTime);
+      $('obs-time').textContent = 'OBS ' + obsStr;
+      $('hero-age').textContent = obsStr;
+
+      // Wind
+      const wdir = ob.wdir;
+      const wspd = ob.wspd !== undefined && ob.wspd !== null ? Math.round(ob.wspd) : null;
+      const wgst = ob.wgst ? Math.round(ob.wgst) : null;
+
+      let dirStr = '--';
+      let isVrb = false;
+      if (wdir !== undefined && wdir !== null) {
+        if (wdir === 0 && wspd === 0) { dirStr = 'CALM'; }
+        else if (wdir === 0 || ob.rawOb && ob.rawOb.includes('VRB')) { dirStr = 'VRB'; isVrb = true; }
+        else { dirStr = pad3(wdir) + '\u00B0'; }
+      }
+
+      $('wind-primary').textContent = dirStr + ' / ' + (wspd !== null ? wspd : '--') + ' kt';
+      $('wind-dir-deg').textContent = wdir !== undefined ? wdir : '--';
+      $('wind-spd').textContent = wspd !== null ? wspd : '--';
+      $('wind-mph').textContent = wspd !== null ? Math.round(wspd * 1.151) : '--';
+
+      // Compass needle
+      if (wdir && wdir > 0 && !isVrb) {
+        $('compass-needle').style.transform = 'translateX(-50%) translateY(-100%) rotate(' + wdir + 'deg)';
+      }
+
+      // Gusts
+      if (wgst) {
+        $('gust-badge').textContent = 'GUSTS ' + wgst + ' kt';
+        $('gust-badge').classList.remove('hidden');
+        $('wind-gust-line').style.display = '';
+        $('wind-gust').textContent = wgst;
+        $('wind-gust-mph').textContent = Math.round(wgst * 1.151);
+      } else {
+        $('gust-badge').classList.add('hidden');
+        $('wind-gust-line').style.display = 'none';
+      }
+
+      // Variable wind direction
+      if (isVrb) {
+        $('wind-vrb-line').style.display = '';
+        $('wind-vrb').textContent = 'Yes';
+      } else {
+        $('wind-vrb-line').style.display = 'none';
+      }
+
+      // Visibility
+      const vis = ob.visib !== undefined && ob.visib !== null ? ob.visib : null;
+      $('vis-val').textContent = vis !== null ? vis : '--';
+      if (vis !== null) {
+        const km = (vis * 1.60934).toFixed(1);
+        $('vis-sub').textContent = vis + ' SM (' + km + ' km)';
+      }
+
+      // Ceiling
+      const ceil = getCeiling(ob.clouds);
+      $('ceil-val').textContent = ceil.text;
+      if (ceil.ft !== Infinity) {
+        $('ceil-sub').textContent = ceil.ft.toLocaleString() + ' ft AGL';
+      } else {
+        $('ceil-sub').textContent = 'No ceiling';
+      }
+
+      // Cloud layers
+      const tbody = $('cloud-tbody');
+      tbody.innerHTML = '';
+      if (ob.clouds && ob.clouds.length > 0) {
+        $('cloud-count').textContent = ob.clouds.length + ' layer' + (ob.clouds.length > 1 ? 's' : '');
+        ob.clouds.forEach(c => {
+          const tr = document.createElement('tr');
+          const cover = c.cover || 'CLR';
+          const base = c.base !== undefined && c.base !== null ? c.base.toLocaleString() + ' ft' : '--';
+          const type = c.type || '--';
+          tr.innerHTML =
+            '<td><span class="cloud-cover-badge ' + coverClass(cover) + '">' + cover + '</span> ' + coverDesc(cover) + '</td>' +
+            '<td>' + base + '</td>' +
+            '<td>' + (type !== '--' ? type : '') + '</td>';
+          tbody.appendChild(tr);
+        });
+      } else {
+        $('cloud-count').textContent = 'Clear';
+        tbody.innerHTML = '<tr><td colspan="3"><span class="cloud-cover-badge cover-clr">CLR</span> Clear skies</td></tr>';
+      }
+
+      // Pressure / Altimeter
+      const altimMb = ob.altim;
+      const altimInHg = altimMb ? (altimMb * 0.02953).toFixed(2) : null;
+      $('press-inhg').innerHTML = (altimInHg || '--') + '<span class="unit">inHg</span>';
+      $('press-hpa').textContent  = altimMb ? altimMb.toFixed(1) : '--';
+      $('press-mmhg').textContent = altimMb ? (altimMb * 0.75006).toFixed(1) : '--';
+      $('press-slp').textContent  = ob.slp ? ob.slp.toFixed(1) : (altimMb ? altimMb.toFixed(1) : '--');
+
+      // Performance data
+      if (temp !== null && altimInHg) {
+        const perf = calcDensityAlt(ob.temp, parseFloat(altimInHg));
+        if (perf) {
+          $('dens-alt').textContent  = perf.da.toLocaleString();
+          $('press-alt').textContent = perf.pa.toLocaleString();
+        }
+      }
+      const spread = (temp !== null && dewpt !== null) ? (temp - dewpt) : null;
+      $('spread-val').textContent = spread !== null ? spread : '--';
+
+      // Raw METAR
+      $('raw-metar').textContent = ob.rawOb || '--';
+      $('metar-age').textContent = obsStr;
+    }
+
+    // ── Apply TAF ──
+    function applyTaf(data) {
+      if (!data || data.length === 0) {
+        $('raw-taf').textContent = 'No TAF available';
+        $('taf-badge').textContent = 'N/A';
+        return;
+      }
+      const taf = data[0];
+      $('raw-taf').textContent = taf.rawTAF || taf.rawOb || JSON.stringify(taf, null, 2);
+      const issued = taf.issueTime || taf.reportTime;
+      $('taf-badge').textContent = issued ? 'Issued ' + fmtObs(issued) : '--';
+    }
+
+    // ── Fetch with proxy fallback ──
+    async function fetchWithFallback(directUrl) {
+      for (const proxy of WX_PROXIES) {
+        const url = proxy ? proxy + encodeURIComponent(directUrl) : directUrl;
+        try {
+          const ctrl = new AbortController();
+          const tmr = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
+          const res = await fetch(url, { signal: ctrl.signal });
+          clearTimeout(tmr);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return await res.json();
+        } catch (e) {
+          console.warn('Fetch failed (' + (proxy || 'direct') + '):', e.message);
+        }
+      }
+      throw new Error('All sources failed');
+    }
+
+    // ── Fetch METAR ──
+    async function fetchMetar() {
+      try {
+        const data = await fetchWithFallback(WX_BASE + '?ids=' + STATION + '&format=json&hours=1');
+        if (Array.isArray(data) && data.length > 0) {
+          applyMetar(data[0]);
+          $('status-dot').classList.remove('error');
+          consecutiveErrors = 0;
+        }
+      } catch (e) {
+        console.error('METAR fetch error:', e);
+        $('status-dot').classList.add('error');
+        consecutiveErrors++;
+        if (consecutiveErrors >= MAX_ERRORS) location.reload();
+      }
+    }
+
+    // ── Fetch TAF ──
+    async function fetchTaf() {
+      try {
+        const data = await fetchWithFallback(TAF_BASE + '?ids=' + STATION + '&format=json');
+        applyTaf(data);
+      } catch (e) {
+        console.error('TAF fetch error:', e);
+        $('raw-taf').textContent = 'Error fetching TAF';
+      }
+    }
+
+    // ── Init ──
+    async function init() {
+      await Promise.all([fetchMetar(), fetchTaf()]);
+      setTimeout(() => $('loading').classList.add('hidden'), 400);
+    }
+
+    init();
+    setInterval(fetchMetar, POLL_MS);
+    setInterval(fetchTaf, POLL_MS);
+
+    // ── Unattended stability ──
+    setInterval(function() {
+      if (Date.now() - pageLoadTime >= AUTO_RELOAD_MS) location.reload();
+    }, 60000);
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) { fetchMetar(); fetchTaf(); }
+    });
+    window.addEventListener('error', function(e) {
+      console.error('Uncaught:', e.message);
+      window.__errCount = (window.__errCount || 0) + 1;
+      if (window.__errCount >= 3) setTimeout(function() { location.reload(); }, 5000);
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Unhandled rejection:', e.reason);
+      e.preventDefault();
+    });
+  </script>
+</body>
+</html>
