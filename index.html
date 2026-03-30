@@ -1325,12 +1325,14 @@
     };
     const WX_BASE  = 'https://aviationweather.gov/api/data/metar';
     const WX_PROXIES = [
-      '',  // try direct first (aviationweather.gov supports CORS)
-      'https://api.allorigins.win/raw?url='
+      'https://api.allorigins.win/raw?url=',
+      'https://corsproxy.io/?url=',
+      'https://api.codetabs.com/v1/proxy?quest=',
+      ''  // try direct last (works on localhost, blocked by CORS on hosted sites)
     ];
     const WPOLL = 5 * 60 * 1000;     // poll every 5 min
     const STALE_MS = 15 * 60 * 1000; // stale after 15 min
-    const FETCH_TIMEOUT = 30000;      // 30s fetch timeout
+    const FETCH_TIMEOUT = 15000;      // 15s fetch timeout per proxy attempt
     const MAX_CONSECUTIVE_ERRORS = 10; // reload after this many consecutive fetch failures
     const HARD_REFRESH_MS = 40 * 60 * 1000; // hard F5 page refresh every 40 min
     const WATCHDOG_INTERVAL = 60 * 1000;    // check feed health every 60s
@@ -1642,7 +1644,15 @@
         const directUrl = WX_BASE + '?ids=' + ids + '&format=json&hours=1';
 
         for (const proxy of WX_PROXIES) {
-          const url = proxy ? proxy + encodeURIComponent(directUrl) : directUrl;
+          let url;
+          if (!proxy) {
+            url = directUrl;
+          } else if (proxy.includes('corsproxy.io')) {
+            // corsproxy.io expects the raw URL (not encoded)
+            url = proxy + encodeURIComponent(directUrl);
+          } else {
+            url = proxy + encodeURIComponent(directUrl);
+          }
           try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
@@ -1665,6 +1675,7 @@
             consecutiveFetchErrors = 0;
             wxStatus.textContent = 'WX: LIVE';
             wxStatus.className = 'wx-ok';
+            console.log('Weather updated via ' + (proxy || 'direct') + ' (' + Object.keys(latest).length + ' stations)');
             return; // success — stop trying proxies
           } catch(e) {
             console.warn('Weather fetch failed (' + (proxy || 'direct') + '):', e.message);
