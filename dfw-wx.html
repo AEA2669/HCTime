@@ -1,0 +1,2075 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DFW Weather Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+
+  /* ── Main Layout ── */
+  .dashboard {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 33vw 1fr;
+    width: 100vw;
+    height: calc(100vh - var(--bar-height));
+  }
+
+  /* ── Left Panel ── */
+  .left-panel {
+    display: grid; grid-template-rows: 1fr 1fr;
+    gap: 1vh; padding: 1.2vh 1vw;
+    position: relative;
+  }
+  .left-panel::after {
+    content: ''; position: absolute;
+    top: 5%; right: 0; bottom: 5%; width: 1px;
+    background: var(--border-color);
+  }
+
+  /* ── Right Panel ── */
+  .right-panel {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: 1.2vh 1vw;
+    gap: 0.8vh;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ── Clock Card ── */
+  .clock-card {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2vh 1.5vw;
+  }
+  .clock-row {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 0.5vh; width: 100%;
+  }
+  .clock-block {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.2vh;
+  }
+  .clock-label {
+    font-size: clamp(0.9rem, 1.7vmin, 1.6rem);
+    text-transform: uppercase; letter-spacing: 0.15vw;
+    color: var(--text-muted); font-weight: 600;
+  }
+  .clock-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(4.5rem, 10vmin, 10rem);
+    font-weight: 700; color: var(--accent);
+    line-height: 1;
+  }
+  .clock-divider {
+    width: 40%; height: 1px;
+    background: var(--border-color);
+  }
+  .clock-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.9rem, 1.5vmin, 1.4rem);
+    color: var(--text-dim); margin-top: 0.8vh;
+    letter-spacing: 0.1vw;
+  }
+
+  /* ── Section Cards (Countdown) ── */
+  .section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.5vh 1.2vw;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    position: relative; overflow: hidden;
+    transition: background 0.3s ease, border-color 0.3s ease;
+    box-shadow: var(--shadow-md);
+    animation: cardIn 0.4s ease-out both;
+  }
+  .section-card:nth-child(2) { animation-delay: 0.08s; }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-label {
+    font-size: clamp(1.3rem, 2.3vmin, 2.3rem);
+    text-transform: uppercase; letter-spacing: 0.35vw;
+    color: var(--text-muted); margin-bottom: 0.2vh; font-weight: 600;
+  }
+  .section-title {
+    font-size: clamp(2.5rem, 5vmin, 5rem);
+    font-weight: 800; color: var(--accent); margin-bottom: 0.1vh;
+    letter-spacing: 0.05vw;
+  }
+
+  /* ── Countdown Ring ── */
+  .countdown-ring-wrap {
+    position: relative;
+    width: var(--ring-size); height: var(--ring-size);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0.4vh 0;
+  }
+  .countdown-ring {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-track  { fill: none; stroke: var(--border-color); stroke-width: 3; }
+  .ring-fill   {
+    fill: none; stroke: var(--accent); stroke-width: 3.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+  }
+  .ring-glow   {
+    fill: none; stroke: var(--accent); stroke-width: 7;
+    stroke-linecap: round; opacity: 0.08;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+    filter: blur(4px);
+  }
+  .ring-fill.alert-ring, .ring-glow.alert-ring {
+    stroke: var(--accent-amber);
+  }
+
+  .countdown-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(4.5rem, 11vmin, 11rem);
+    font-weight: 700; font-variant-numeric: tabular-nums;
+    letter-spacing: 0.1vw; line-height: 1;
+    color: var(--text-primary); z-index: 1;
+    transition: color 0.6s ease, text-shadow 0.6s ease;
+  }
+
+  .next-label {
+    font-size: clamp(1.3rem, 2.5vmin, 2.5rem);
+    color: var(--text-muted); margin-bottom: 0.8vh;
+  }
+  .next-label span { color: var(--accent); font-weight: 700; }
+
+  /* ── Progress Bar ── */
+  .progress-track {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: rgba(0,0,0,0.04);
+    border-radius: 0 0 1.2vmin 1.2vmin; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-green));
+    border-radius: 0 2px 2px 0;
+    transition: width 1s linear, background 0.3s ease;
+  }
+  .progress-fill.alert-progress {
+    background: linear-gradient(90deg, var(--accent-amber), var(--accent-red));
+  }
+
+  /* ── Timeline Pips ── */
+  .pip-row {
+    display: flex; gap: 1vw;
+    align-items: flex-start; margin-top: 0.4vh;
+    position: relative;
+  }
+  .pip-row::before {
+    content: ''; position: absolute;
+    top: calc(clamp(0.3rem, 0.65vmin, 0.6rem));
+    left: calc(clamp(0.3rem, 0.65vmin, 0.6rem));
+    right: calc(clamp(0.3rem, 0.65vmin, 0.6rem));
+    height: 2px;
+    background: linear-gradient(90deg,
+      rgba(22,163,74,0.3) 0%,
+      rgba(148,163,184,0.2) 50%,
+      rgba(226,229,234,0.3) 100%);
+    z-index: 0; border-radius: 1px;
+  }
+  .pip {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.3vh; z-index: 1;
+  }
+  .pip-dot {
+    width: clamp(0.5rem, 1.2vmin, 1.1rem);
+    height: clamp(0.5rem, 1.2vmin, 1.1rem);
+    border-radius: 50%;
+    background: var(--upcoming-dot);
+    border: 2px solid var(--text-dim);
+    transition: all 0.4s ease;
+  }
+  .pip-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.9rem, 1.7vmin, 1.6rem);
+    color: var(--text-dim); font-variant-numeric: tabular-nums;
+  }
+  .pip.completed .pip-dot {
+    background: var(--completed-dot); border-color: var(--completed-dot);
+  }
+  .pip.completed .pip-time { color: var(--completed-dot); }
+  .pip.current .pip-dot {
+    background: var(--accent-amber); border-color: var(--accent-amber);
+  }
+  .pip.current .pip-time { color: var(--accent-amber); font-weight: 700; }
+
+  /* ── Alert State ── */
+  .section-card.alert-active {
+    background: var(--alert-bg);
+    border-color: var(--alert-border);
+  }
+  .section-card.alert-active .countdown-value {
+    color: var(--alert-text);
+  }
+  .section-card.alert-active .section-title {
+    color: var(--alert-text);
+  }
+
+  /* ── Weather Panel Header ── */
+  .wx-panel-header {
+    display: flex; align-items: center;
+    justify-content: space-between; padding: 0 0.3vw;
+  }
+  .wx-panel-title {
+    font-size: clamp(1.3rem, 2.3vmin, 2.2rem);
+    text-transform: uppercase; letter-spacing: 0.3vw;
+    color: var(--text-muted); font-weight: 700;
+  }
+  .wx-panel-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1rem, 1.8vmin, 1.7rem);
+    color: var(--text-dim);
+    padding: 0.2vh 0.5vw;
+    background: var(--bg-card-alt);
+    border-radius: 0.3vmin;
+    border: 1px solid var(--border-color);
+  }
+
+  /* ── Weather Content ── */\n  .wx-content {\n    min-height: 0;\n  }
+
+  /* ── DFW Hero Card ── */
+  .weather-hero {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 3vh 2.5vw;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 1.5vh 2vw;
+    align-items: center;
+    box-shadow: var(--shadow-md);
+    flex: 1;
+    animation: cardIn 0.4s ease-out 0.1s both;
+    position: relative; overflow: hidden;
+  }
+
+  .hero-left {
+    grid-row: 1 / 2;
+    display: flex; flex-direction: column;
+    align-items: flex-start;
+  }
+  .hero-icao {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(6rem, 12vmin, 12rem);
+    font-weight: 800; color: var(--accent); line-height: 1;
+  }
+  .hero-airport-name {
+    font-size: clamp(1.4rem, 2.5vmin, 2.5rem);
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.15vw; margin-top: 0.2vh;
+  }
+  .hero-conditions {
+    display: flex; align-items: center;
+    gap: 0.5vw; margin-top: 0.5vh;
+  }
+  .hero-conditions-badge {
+    font-size: clamp(1.5rem, 2.8vmin, 2.8rem);
+    padding: 0.3vh 0.6vw; border-radius: 0.4vmin;
+    font-weight: 700; letter-spacing: 0.05vw;
+  }
+  .hero-wx-icon {
+    font-size: clamp(4rem, 7vmin, 7rem);
+    line-height: 1;
+  }
+  .hero-obs-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.9rem, 1.6vmin, 1.5rem);
+    color: var(--text-dim); margin-top: 0.3vh;
+  }
+
+  .hero-details {
+    grid-row: 1 / 2;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2vw 1.5vw;
+    align-self: stretch;
+    align-content: center;
+  }
+  .hero-metric {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.3vh;
+    padding: 1.2vh 0.6vw;
+    border-radius: 0.4vmin;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+  }
+  .hero-metric-label {
+    font-size: clamp(1.1rem, 2vmin, 2rem);
+    text-transform: uppercase; letter-spacing: 0.1vw;
+    color: var(--text-muted);
+  }
+  .hero-metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2.5rem, 5vmin, 5rem);
+    font-weight: 700; color: var(--text-primary); line-height: 1;
+  }
+  .hero-metric-unit {
+    font-size: clamp(0.9rem, 1.5vmin, 1.4rem);
+    color: var(--text-dim);
+  }
+
+  .hero-metar-raw {
+    grid-column: 1 / -1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.9rem, 1.5vmin, 1.4rem);
+    color: var(--text-dim);
+    background: var(--bg-card-alt);
+    padding: 0.5vh 0.6vw;
+    border-radius: 0.3vmin;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border: 1px solid var(--border-color);
+  }
+
+  /* ── Flight Category Badges (dark default) ── */
+  .cat-vfr  { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+  .cat-mvfr { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+  .cat-ifr  { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+  .cat-lifr { background: rgba(192,132,252,0.12); color: #c084fc; border: 1px solid rgba(192,132,252,0.2); }
+  body.light-mode .cat-vfr  { background: rgba(22,163,74,0.08); color: #15803d; border-color: rgba(22,163,74,0.2); }
+  body.light-mode .cat-mvfr { background: rgba(79,107,237,0.08); color: #3b5bdb; border-color: rgba(79,107,237,0.2); }
+  body.light-mode .cat-ifr  { background: rgba(220,38,38,0.08); color: #dc2626; border-color: rgba(220,38,38,0.2); }
+  body.light-mode .cat-lifr { background: rgba(124,58,237,0.08); color: #7c3aed; border-color: rgba(124,58,237,0.2); }
+  .wx-ok    { color: var(--text-muted); }
+  .wx-stale { color: var(--accent-amber); }
+
+  /* ── Airport Grid ── */
+  .airport-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0.6vh 0.5vw;
+    overflow: visible;
+    min-height: 0;
+  }
+  /* Row 1: 4 cards × 3 cols each = 12 */
+  .airport-card:nth-child(-n+4) { grid-column: span 3; }
+  /* Row 2: 3 cards × 4 cols each = 12 */
+  .airport-card:nth-child(n+5):nth-child(-n+7)  { grid-column: span 4; }
+  /* Row 3: 3 cards × 4 cols each = 12 */
+  .airport-card:nth-child(n+8)  { grid-column: span 4; }
+
+  .airport-card {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.8vh 0.6vw;
+    display: flex; flex-direction: column; gap: 0.3vh;
+    transition: all 0.2s ease;
+    animation: cardIn 0.4s ease-out both;
+    position: relative; overflow: hidden;
+    min-height: 0;
+  }
+  .airport-card:nth-child(1) { animation-delay: .25s; }
+  .airport-card:nth-child(2) { animation-delay: .30s; }
+  .airport-card:nth-child(3) { animation-delay: .35s; }
+  .airport-card:nth-child(4) { animation-delay: .40s; }
+  .airport-card:nth-child(5) { animation-delay: .45s; }
+  .airport-card:nth-child(6) { animation-delay: .50s; }
+  .airport-card:nth-child(7) { animation-delay: .55s; }
+  .airport-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+  }
+  body.no-hover .airport-card:hover {
+    background: var(--bg-card-alt);
+    border-color: var(--border-color);
+    box-shadow: none;
+    transform: none;
+  }
+  body.no-color-code .val-green,
+  body.no-color-code .val-amber,
+  body.no-color-code .val-red {
+    color: var(--text-primary) !important;
+    text-shadow: none !important;
+  }
+  body.no-cat-accent .airport-card::before {
+    display: none !important;
+  }
+
+  .airport-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 0.1vh;
+  }
+  .airport-header-temp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2rem, 3.8vmin, 3.8rem);
+    font-weight: 700; color: var(--text-primary);
+    line-height: 1;
+  }
+  .airport-header-temp .temp-unit {
+    font-size: 55%; color: var(--text-dim); font-weight: 400;
+  }
+  .airport-icao-wrap {
+    display: flex; align-items: center; gap: 0.3vw;
+  }
+  .airport-icao {
+    font-size: clamp(2rem, 3.8vmin, 3.8rem);
+    font-weight: 800; color: var(--accent);
+  }
+  .airport-wx-icon {
+    font-size: clamp(1.3rem, 2.5vmin, 2.5rem);
+  }
+  .airport-name {
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
+    color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.05vw; line-height: 1;
+  }
+  .airport-conditions {
+    font-size: clamp(1rem, 1.8vmin, 1.7rem);
+    padding: 0.15vh 0.35vw; border-radius: 0.3vmin; font-weight: 700;
+  }
+
+  .airport-metrics {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 0.2vh 0.3vw;
+    flex: 1;
+    min-height: 0;
+  }
+  .airport-metric {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-width: 0;
+    padding: 0.2vh 0.15vw;
+    border-radius: 0.3vmin;
+    background: var(--bg-metric);
+    overflow: hidden;
+  }
+  .airport-metric-label {
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
+    color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.04vw; line-height: 1.1;
+  }
+  .airport-metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1.3rem, 2.5vmin, 2.5rem);
+    font-weight: 700; color: var(--text-primary);
+    white-space: nowrap;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  /* ── Metric Value Color Coding (dark default) ── */
+  .val-green  { color: #3dbb78; }
+  .val-yellow { color: #fbbf24; }
+  .val-amber  { color: #f59e0b; }
+  .val-red    { color: #f87171; }
+  body.light-mode .val-green  { color: #16a34a; }
+  body.light-mode .val-yellow { color: #ca8a04; }
+  body.light-mode .val-amber  { color: #d97706; }
+  body.light-mode .val-red    { color: #dc2626; }
+
+  /* ── Flight Category Card Accent ── */
+  .airport-card::before {
+    content: ''; position: absolute; top: 8%; bottom: 8%;
+    left: 0; width: 3px; border-radius: 0 2px 2px 0;
+    background: var(--card-cat-color, transparent);
+    transition: background 0.3s ease;
+  }
+
+  /* Row 2 cards get slightly bigger metric values since they have more room */
+  .airport-card:nth-child(n+5) .airport-metric-value {
+    font-size: clamp(1.5rem, 2.8vmin, 2.8rem);
+  }
+  .airport-card:nth-child(n+5) .airport-icao {
+    font-size: clamp(2.2rem, 4.2vmin, 4.2rem);
+  }
+
+  .airport-metar-raw {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
+    color: var(--text-dim); opacity: 0.5;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: auto; padding-top: 0.2vh;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+
+  /* ── Bottom Bar ── */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0;
+    width: 100vw; height: var(--bar-height);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex; justify-content: space-between;
+    align-items: center;
+    padding: 0 1.5vw;
+    font-size: clamp(1rem, 1.8vmin, 1.7rem);
+    color: var(--text-dim); z-index: 10;
+  }
+  .bottom-bar-title {
+    letter-spacing: 0.2vw; font-weight: 700;
+    color: var(--text-muted);
+    font-size: clamp(1.1rem, 2vmin, 1.9rem);
+  }
+  .bottom-bar-center {
+    display: flex; gap: 1.5vw; align-items: center;
+    font-size: clamp(1rem, 1.9vmin, 1.8rem);
+  }
+  .clock {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: clamp(1.3rem, 2.3vmin, 2.2rem);
+  }
+
+  /* ── Alert Page Mini Buttons ── */
+  .alert-btns { display: flex; gap: 0.3vw; align-items: center; }
+  .alert-btn {
+    text-decoration: none;
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    padding: 0.2vh 0.35vw;
+    border-radius: 0.3vmin;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-alt);
+    color: var(--text-dim);
+    line-height: 1;
+    transition: all 0.25s ease;
+    cursor: pointer;
+  }
+  .alert-btn:hover { color: var(--text-primary); border-color: var(--border-hover); background: var(--bg-card-hover); transform: scale(1.1); }
+
+  /* ── Settings Button ── */
+  .settings-btn {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 0.4vmin;
+    color: var(--text-muted);
+    font-size: clamp(0.9rem, 1.6vmin, 1.5rem);
+    padding: 0.3vh 0.6vw;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex; align-items: center; gap: 0.3vw;
+    letter-spacing: 0.05vw;
+  }
+  .settings-btn:hover {
+    color: var(--accent); border-color: var(--accent);
+    background: var(--accent-subtle);
+  }
+  .settings-btn .gear-icon {
+    display: inline-block;
+    transition: transform 0.5s ease;
+  }
+  .settings-btn:hover .gear-icon {
+    transform: rotate(90deg);
+  }
+
+  /* ── Settings Modal ── */
+  .settings-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.45);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .settings-overlay.open {
+    opacity: 1; pointer-events: all;
+  }
+  .settings-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 3vh 2.5vw;
+    width: min(90vw, 600px);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+    transform: scale(0.95) translateY(12px);
+    transition: transform 0.25s ease;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128,128,128,0.2) transparent;
+  }
+  .settings-overlay.open .settings-modal {
+    transform: scale(1) translateY(0);
+  }
+  .settings-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2.5vh;
+    padding-bottom: 1.5vh;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .settings-modal-title {
+    font-size: clamp(1.2rem, 2.2vmin, 2rem);
+    font-weight: 800; color: var(--accent);
+    letter-spacing: 0.08vw;
+  }
+  .settings-close-btn {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 0.4vmin;
+    color: var(--text-muted);
+    font-size: clamp(1rem, 1.6vmin, 1.5rem);
+    padding: 0.3vh 0.6vw;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .settings-close-btn:hover {
+    color: var(--accent-red); border-color: rgba(220,38,38,0.3);
+    background: rgba(220,38,38,0.08);
+  }
+  .settings-section {
+    margin-bottom: 2.5vh;
+  }
+  .settings-section-title {
+    font-size: clamp(0.85rem, 1.4vmin, 1.3rem);
+    text-transform: uppercase; letter-spacing: 0.2vw;
+    color: var(--text-muted); font-weight: 700;
+    margin-bottom: 1.2vh;
+  }
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1vh 1vw;
+  }
+  .theme-group-label {
+    grid-column: 1 / -1;
+    font-size: clamp(0.6rem, 1vmin, 0.85rem);
+    text-transform: uppercase;
+    letter-spacing: 0.15vw;
+    color: var(--text-dim);
+    font-weight: 700;
+    padding: 0.5vh 0 0.2vh;
+  }
+  .theme-group-label:first-child { padding-top: 0; }
+  .theme-card {
+    background: var(--bg-card-alt);
+    border: 2px solid var(--border-color);
+    border-radius: 0.8vmin;
+    padding: 1.5vh 1vw;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+  .theme-card:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .theme-card.active {
+    border-color: var(--accent);
+    background: var(--accent-subtle);
+  }
+  .theme-preview {
+    width: 100%; height: clamp(2rem, 4vmin, 3.5rem);
+    border-radius: 0.4vmin; margin-bottom: 0.8vh;
+    position: relative; overflow: hidden;
+  }
+  .theme-name {
+    font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
+    font-weight: 700; color: var(--text-primary);
+    margin-bottom: 0.2vh;
+  }
+  .theme-desc {
+    font-size: clamp(0.55rem, 0.9vmin, 0.85rem);
+    color: var(--text-dim);
+  }
+  .settings-option {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1vh 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .settings-option:last-child { border-bottom: none; }
+  .settings-option-label {
+    font-size: clamp(0.8rem, 1.3vmin, 1.2rem);
+    color: var(--text-secondary);
+  }
+  .settings-option-desc {
+    font-size: clamp(0.55rem, 0.9vmin, 0.85rem);
+    color: var(--text-dim); margin-top: 0.2vh;
+  }
+  /* Toggle Switch */
+  .toggle-switch {
+    position: relative;
+    width: clamp(2.5rem, 4vmin, 3.5rem);
+    height: clamp(1.3rem, 2.2vmin, 2rem);
+    background: var(--bg-card-hover);
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border: 1px solid var(--border-color);
+  }
+  .toggle-switch.on {
+    background: var(--accent);
+    border-color: var(--accent-hover);
+  }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: calc(clamp(1.3rem, 2.2vmin, 2rem) - 6px);
+    height: calc(clamp(1.3rem, 2.2vmin, 2rem) - 6px);
+    background: #ffffff;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+  .toggle-switch.on::after {
+    left: calc(100% - clamp(1.3rem, 2.2vmin, 2rem) + 4px);
+    background: #ffffff;
+  }
+
+  /* ── Settings Select Dropdown ── */
+  .settings-select {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 0.4vmin;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.65rem, 1.1vmin, 1rem);
+    padding: 0.4vh 0.6vw;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s ease;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5vw center;
+    padding-right: 1.5vw;
+  }
+  .settings-select:focus {
+    border-color: var(--accent);
+  }
+  .settings-select option {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+
+  /* ── Settings Range Slider ── */
+  .settings-range-wrap {
+    display: flex; align-items: center; gap: 0.5vw;
+  }
+  .settings-range-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.6rem, 1vmin, 0.9rem);
+    color: var(--accent); min-width: 2.5em; text-align: center;
+  }
+  .settings-range {
+    -webkit-appearance: none; appearance: none;
+    width: clamp(5rem, 10vmin, 8rem);
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .settings-range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: clamp(0.8rem, 1.4vmin, 1.2rem);
+    height: clamp(0.8rem, 1.4vmin, 1.2rem);
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .settings-range::-moz-range-thumb {
+    width: clamp(0.8rem, 1.4vmin, 1.2rem);
+    height: clamp(0.8rem, 1.4vmin, 1.2rem);
+    background: var(--accent);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head><body>
+  <div class="bg-mesh"><div class="bg-orb"></div><div class="bg-orb2"></div></div>
+  <div class="scanlines"></div>
+
+  <div class="dashboard">
+    <!-- ─── Left Panel: Clock & Field ─── -->
+    <div class="left-panel">
+
+      <div class="section-card clock-card">
+        <div class="section-label">Time</div>
+        <div class="clock-row">
+          <div class="clock-block">
+            <div class="clock-label">LOCAL</div>
+            <div class="clock-time" id="panel-local-clock">--:--:--</div>
+          </div>
+          <div class="clock-divider"></div>
+          <div class="clock-block">
+            <div class="clock-label">UTC</div>
+            <div class="clock-time" id="panel-utc-clock">--:--:--</div>
+          </div>
+        </div>
+        <div class="clock-date" id="panel-clock-date"></div>
+      </div>
+
+      <div class="section-card" id="field-section">
+        <div class="section-label">Schedule</div>
+        <div class="section-title">FIELD CONDITIONS</div>
+        <div class="countdown-ring-wrap">
+          <svg class="countdown-ring" viewBox="0 0 200 200">
+            <circle class="ring-track" cx="100" cy="100" r="90"/>
+            <circle class="ring-glow"  cx="100" cy="100" r="90" id="field-ring-glow" stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
+            <circle class="ring-fill"  cx="100" cy="100" r="90" id="field-ring"      stroke-dasharray="565.49" stroke-dashoffset="565.49"/>
+          </svg>
+          <div class="countdown-value" id="field-countdown">--:--:--</div>
+        </div>
+        <div class="next-label">Next: <span id="field-next">--:--</span></div>
+        <div class="pip-row" id="field-pips"></div>
+        <div class="progress-track"><div class="progress-fill" id="field-progress"></div></div>
+      </div>
+
+    </div>
+
+    <!-- ─── Right Panel: Weather ─── -->
+    <div class="right-panel">
+
+      <div class="wx-panel-header">
+        <div class="wx-panel-title">Live Weather Intelligence</div>
+        <div class="wx-panel-badge">KDFW</div>
+      </div>
+
+      <div class="wx-content">
+        <!-- DFW Hero Card -->
+        <div class="weather-hero" id="wx-dfw">
+          <div class="hero-left">
+            <a href="dfw.html" style="text-decoration:none;color:inherit;" title="Open detailed DFW weather">
+              <div class="hero-icao" style="cursor:pointer;">DFW</div>
+            </a>
+            <div class="hero-airport-name">Dallas/Fort Worth Intl</div>
+            <div class="hero-conditions">
+              <span class="hero-conditions-badge" id="dfw-cat">---</span>
+              <span class="hero-wx-icon" id="dfw-icon"></span>
+            </div>
+            <div class="hero-obs-time" id="dfw-obs">Waiting...</div>
+          </div>
+          <div class="hero-details">
+            <div class="hero-metric">
+              <div class="hero-metric-label">Temp</div>
+              <div class="hero-metric-value" id="dfw-temp">--</div>
+              <div class="hero-metric-unit">&deg;F</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Dewpt</div>
+              <div class="hero-metric-value" id="dfw-dewpt">--</div>
+              <div class="hero-metric-unit">&deg;F</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Wind</div>
+              <div class="hero-metric-value" id="dfw-wind">--</div>
+              <div class="hero-metric-unit">kt</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Gust</div>
+              <div class="hero-metric-value" id="dfw-gust">--</div>
+              <div class="hero-metric-unit">kt</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Visibility</div>
+              <div class="hero-metric-value" id="dfw-vis">--</div>
+              <div class="hero-metric-unit">SM</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Ceiling</div>
+              <div class="hero-metric-value" id="dfw-ceil">--</div>
+              <div class="hero-metric-unit">ft</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Altimeter</div>
+              <div class="hero-metric-value" id="dfw-alt">--</div>
+              <div class="hero-metric-unit">inHg</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Humidity</div>
+              <div class="hero-metric-value" id="dfw-hum">--</div>
+              <div class="hero-metric-unit">%</div>
+            </div>
+          </div>
+          <div class="hero-metar-raw" id="dfw-metar">Fetching METAR...</div>
+        </div>
+      </div><!-- /wx-content -->
+
+    </div><!-- /right-panel -->
+  </div><!-- /dashboard -->
+
+  <!-- ─── Bottom Bar ─── -->
+  <div class="bottom-bar">
+    <span class="bottom-bar-title">DFW COMMAND CENTER</span>
+    <div class="bottom-bar-center">
+      <span id="wx-status" class="wx-ok">WX: Initializing</span>
+      <span id="date-display"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:1vw;">
+      <div class="alert-btns">
+        <a href="index.html" class="alert-btn" title="All Stations">&#127968;</a>
+        <a href="Clocks.html" class="alert-btn" title="Clocks">&#128368;</a>
+        <a href="Ramp%20Closed.html" class="alert-btn" title="Ramp Closed">&#9940;</a>
+        <a href="Yellow%20Alert.html" class="alert-btn" title="Yellow Alert">&#9889;</a>
+        <a href="High%20Winds.html" class="alert-btn" title="High Winds">&#128168;</a>
+      </div>
+      <span class="clock" id="live-clock">--:--:--</span>
+      <button class="settings-btn" id="settings-btn" title="Settings">
+        <span class="gear-icon">&#9881;</span> SETTINGS
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Settings Modal ─── -->
+  <div class="settings-overlay" id="settings-overlay">
+    <div class="settings-modal">
+      <div class="settings-modal-header">
+        <span class="settings-modal-title">&#9881; Settings</span>
+        <button class="settings-close-btn" id="settings-close">&times;</button>
+      </div>
+
+      <!-- Themes -->
+      <div class="settings-section">
+        <div class="settings-section-title">Theme</div>
+        <div class="theme-grid" id="theme-grid">
+
+          <div class="theme-group-label">Dark</div>
+
+          <div class="theme-card active" data-theme="dark">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0f1117,#1c1e2a,#5b7bf7);"></div>
+            <div class="theme-name">Professional</div>
+            <div class="theme-desc">Clean dark default</div>
+          </div>
+          <div class="theme-card" data-theme="dark-slate">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#101214,#1e2024,#8295ad);"></div>
+            <div class="theme-name">Slate</div>
+            <div class="theme-desc">Neutral dark gray</div>
+          </div>
+          <div class="theme-card" data-theme="dark-ocean">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0c1220,#182235,#3b82f6);"></div>
+            <div class="theme-name">Ocean</div>
+            <div class="theme-desc">Deep navy blue</div>
+          </div>
+          <div class="theme-card" data-theme="dark-emerald">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0a1210,#162420,#34d399);"></div>
+            <div class="theme-name">Emerald</div>
+            <div class="theme-desc">Dark green tones</div>
+          </div>
+          <div class="theme-card" data-theme="dark-violet">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#100e18,#1e1a32,#a78bfa);"></div>
+            <div class="theme-name">Violet</div>
+            <div class="theme-desc">Deep purple accent</div>
+          </div>
+          <div class="theme-card" data-theme="dark-rose">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#140e10,#281c22,#fb7185);"></div>
+            <div class="theme-name">Rose</div>
+            <div class="theme-desc">Warm dark rose</div>
+          </div>
+
+          <div class="theme-group-label">Light</div>
+
+          <div class="theme-card" data-theme="light">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f0f2f5,#ffffff,#4f6bed);"></div>
+            <div class="theme-name">Professional</div>
+            <div class="theme-desc">Clean light default</div>
+          </div>
+          <div class="theme-card" data-theme="light-slate">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f1f5f9,#ffffff,#475569);"></div>
+            <div class="theme-name">Slate</div>
+            <div class="theme-desc">Neutral gray tones</div>
+          </div>
+          <div class="theme-card" data-theme="light-ocean">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f0f7ff,#ffffff,#2563eb);"></div>
+            <div class="theme-name">Ocean</div>
+            <div class="theme-desc">Cool blue accent</div>
+          </div>
+          <div class="theme-card" data-theme="light-emerald">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f0fdf4,#ffffff,#059669);"></div>
+            <div class="theme-name">Emerald</div>
+            <div class="theme-desc">Fresh green</div>
+          </div>
+          <div class="theme-card" data-theme="light-violet">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f5f3ff,#ffffff,#7c3aed);"></div>
+            <div class="theme-name">Violet</div>
+            <div class="theme-desc">Purple modern</div>
+          </div>
+          <div class="theme-card" data-theme="light-rose">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#fff5f5,#ffffff,#e11d48);"></div>
+            <div class="theme-name">Rose</div>
+            <div class="theme-desc">Warm rose</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Display Options -->
+      <div class="settings-section">
+        <div class="settings-section-title">Display</div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Scanlines Effect</div>
+            <div class="settings-option-desc">CRT-style overlay lines</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-scanlines"></div>
+        </div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Background Animation</div>
+            <div class="settings-option-desc">Floating orb animations</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-bg-anim"></div>
+        </div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Card Hover Effects</div>
+            <div class="settings-option-desc">Glow on hover for airport cards</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-hover"></div>
+        </div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Metric Color Coding</div>
+            <div class="settings-option-desc">Color wind/vis/ceiling by severity</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-color-code"></div>
+        </div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Category Accent Bars</div>
+            <div class="settings-option-desc">Flight-cat color bar on cards</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-cat-accent"></div>
+        </div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Raw METAR Display</div>
+            <div class="settings-option-desc">Show raw METAR text on cards</div>
+          </div>
+          <div class="toggle-switch on" id="toggle-metar"></div>
+        </div>
+      </div>
+
+      <!-- Clock & Data -->
+      <div class="settings-section">
+        <div class="settings-section-title">Clock & Data</div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Clock Format</div>
+            <div class="settings-option-desc">12-hour or 24-hour clock</div>
+          </div>
+          <select class="settings-select" id="select-clock-fmt">
+            <option value="24h">24H</option>
+            <option value="12h">12H</option>
+          </select>
+        </div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Weather Poll Interval</div>
+            <div class="settings-option-desc">How often to refresh weather</div>
+          </div>
+          <select class="settings-select" id="select-wx-poll">
+            <option value="60000">1 min</option>
+            <option value="180000">3 min</option>
+            <option value="300000" selected>5 min</option>
+            <option value="600000">10 min</option>
+          </select>
+        </div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Display Scale</div>
+            <div class="settings-option-desc">Adjust size for wall display</div>
+          </div>
+          <div class="settings-range-wrap">
+            <input type="range" class="settings-range" id="range-scale" min="80" max="150" value="100" step="5">
+            <span class="settings-range-val" id="scale-val">100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brightness -->
+      <div class="settings-section">
+        <div class="settings-section-title">Brightness & Contrast</div>
+        <div class="settings-option">
+          <div>
+            <div class="settings-option-label">Screen Brightness</div>
+            <div class="settings-option-desc">Dim for dark rooms</div>
+          </div>
+          <div class="settings-range-wrap">
+            <input type="range" class="settings-range" id="range-brightness" min="40" max="100" value="100" step="5">
+            <span class="settings-range-val" id="brightness-val">100%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ─── JavaScript ─── -->
+  <script>
+    /* ═══════════════════════════════════════════════════════════════
+       OPERATIONS COMMAND CENTER — JavaScript Engine
+       ═══════════════════════════════════════════════════════════════ */
+
+    // ── Schedules (24h local time [hour, minute]) ──
+    const FIELD = [[0,0],[6,0],[12,0],[18,0]];
+
+    // ── Alert: 10 minutes before event ──
+    const ALERT_WINDOW_MS = 10 * 60 * 1000;
+    const CIRC = 565.49;
+
+    // ── Weather Config ──
+    const STATIONS = {
+      dfw: 'KDFW'
+    };
+    const WX_BASE  = 'https://aviationweather.gov/api/data/metar';
+    const WX_PROXIES = [
+      'https://api.allorigins.win/raw?url=',
+      'https://corsproxy.io/?url=',
+      'https://api.codetabs.com/v1/proxy?quest=',
+      ''  // try direct last (works on localhost, blocked by CORS on hosted sites)
+    ];
+    const WPOLL = 5 * 60 * 1000;     // poll every 5 min
+    const STALE_MS = 15 * 60 * 1000; // stale after 15 min
+    const FETCH_TIMEOUT = 15000;      // 15s fetch timeout per proxy attempt
+    const MAX_CONSECUTIVE_ERRORS = 5;  // hard reload after this many consecutive fetch failures
+    const HARD_REFRESH_MS = 20 * 60 * 1000; // hard F5 page refresh every 20 min to stay fresh
+    const WATCHDOG_INTERVAL = 30 * 1000;    // check feed health every 30s
+    const WATCHDOG_STALE_LIMIT = 5 * 60 * 1000; // force re-fetch if no success for 5 min
+    const RELOAD_AFTER_STALE_MS = 15 * 60 * 1000; // hard reload if no success for 15 min
+    const pageLoadTime = Date.now();
+    let lastWxFetch = 0;
+    let consecutiveFetchErrors = 0;
+
+    // ── Settings State (moved early to avoid temporal dead zone) ──
+    let settings = {
+      theme: 'dark',
+      scanlines: false,
+      bgAnim: false,
+      hoverEffects: false,
+      colorCode: true,
+      catAccent: true,
+      showMetar: true,
+      clockFmt: '24h',
+      wxPoll: 300000,
+      scale: 100,
+      brightness: 100
+    };
+    // Load saved settings early
+    try {
+      const saved = localStorage.getItem('ops-settings');
+      if (saved) settings = { ...settings, ...JSON.parse(saved) };
+    } catch(e) {}
+    // Migrate old theme names
+    const _tmig = {default:'dark',slate:'light-slate',ocean:'light-ocean',emerald:'light-emerald',violet:'light-violet',rose:'light-rose'};
+    if (_tmig[settings.theme]) settings.theme = _tmig[settings.theme];
+
+    // ── DOM References ──
+    const $ = id => document.getElementById(id);
+
+    const fieldPips = $('field-pips');
+    const fieldSec  = $('field-section');
+    const fieldCD   = $('field-countdown');
+    const fieldNx   = $('field-next');
+    const fieldRing = $('field-ring');
+    const fieldGlow = $('field-ring-glow');
+    const fieldBar  = $('field-progress');
+    const clockEl   = $('live-clock'), dateEl = $('date-display'), wxStatus = $('wx-status');
+    const panelLocalClock = $('panel-local-clock');
+    const panelUtcClock   = $('panel-utc-clock');
+    const panelClockDate  = $('panel-clock-date');
+
+    // ── Helpers ──
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function pad3(n) { return String(n).padStart(3, '0'); }
+    function fmtHHMM(h, m) { return pad2(h) + ':' + pad2(m); }
+
+    function fmtCountdown(ms) {
+      if (ms <= 0) return '00:00:00';
+      const h = Math.floor(ms / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
+    }
+
+    function buildTime(d, hm) {
+      const t = new Date(d);
+      t.setHours(hm[0], hm[1], 0, 0);
+      return t;
+    }
+
+    // ── Build Pip Timeline ──
+    function buildPips(container, schedule) {
+      container.innerHTML = '';
+      schedule.forEach(hm => {
+        const pip = document.createElement('div');
+        pip.className = 'pip';
+        pip.innerHTML =
+          '<div class="pip-dot"></div>' +
+          '<div class="pip-time">' + fmtHHMM(hm[0], hm[1]) + '</div>';
+        container.appendChild(pip);
+      });
+    }
+
+    // ── Update Section (countdown, ring, pips, alert state) ──
+    function updateSection(now, sch, pips, secEl, cdEl, nxEl, ringEl, glowEl, progEl) {
+      const today = [];
+      sch.forEach(hm => today.push(buildTime(now, hm)));
+
+      // Update pip states
+      const pipEls = pips.querySelectorAll('.pip');
+      let nextIdx = -1;
+      for (let i = 0; i < today.length; i++) {
+        pipEls[i].classList.remove('completed', 'current');
+        if (now >= today[i]) {
+          pipEls[i].classList.add('completed');
+        } else if (nextIdx === -1) {
+          nextIdx = i;
+          pipEls[i].classList.add('current');
+        }
+      }
+
+      // Find next and previous event times
+      let nextTime, prevTime;
+      if (nextIdx === -1) {
+        // All events done today, wrap to first event tomorrow
+        prevTime = today[today.length - 1];
+        nextTime = new Date(today[0]);
+        nextTime.setDate(nextTime.getDate() + 1);
+      } else if (nextIdx === 0) {
+        // Before first event, prev is last event yesterday
+        prevTime = new Date(today[today.length - 1]);
+        prevTime.setDate(prevTime.getDate() - 1);
+        nextTime = today[0];
+      } else {
+        prevTime = today[nextIdx - 1];
+        nextTime = today[nextIdx];
+      }
+
+      const diff = nextTime - now;
+      cdEl.textContent = fmtCountdown(diff);
+      nxEl.textContent = fmtHHMM(nextTime.getHours(), nextTime.getMinutes());
+
+      // Ring + bar progress: full interval between prev → next event
+      const totalInterval = nextTime - prevTime;
+      const elapsed = now - prevTime;
+      const ratio = Math.max(0, Math.min(1, elapsed / totalInterval));
+      const offset = CIRC * (1 - ratio);
+      ringEl.style.strokeDashoffset = offset;
+      glowEl.style.strokeDashoffset = offset;
+
+      // Progress bar
+      progEl.style.width = (ratio * 100) + '%';
+
+      // Alert state (10 min before)
+      const isAlert = diff <= ALERT_WINDOW_MS && diff > 0;
+      secEl.classList.toggle('alert-active', isAlert);
+      ringEl.classList.toggle('alert-ring', isAlert);
+      glowEl.classList.toggle('alert-ring', isAlert);
+      progEl.classList.toggle('alert-progress', isAlert);
+      if (isAlert) {
+        cdEl.style.color = '';
+        cdEl.style.textShadow = '';
+      } else {
+        cdEl.style.color = '';
+        cdEl.style.textShadow = '';
+      }
+    }
+
+    // ── Main Tick (every second) ──
+    function tick() {
+      const now = new Date();
+
+      // Update clock
+      clockEl.textContent = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
+
+      // Update date
+      const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+      const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      dateEl.textContent = days[now.getDay()] + ' ' + pad2(now.getDate()) + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+      // Update panel clocks
+      panelLocalClock.textContent = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
+      panelUtcClock.textContent = pad2(now.getUTCHours()) + ':' + pad2(now.getUTCMinutes()) + ':' + pad2(now.getUTCSeconds());
+      panelClockDate.textContent = days[now.getDay()] + ' ' + pad2(now.getDate()) + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+      // Update sections
+      updateSection(now, FIELD, fieldPips, fieldSec, fieldCD, fieldNx, fieldRing, fieldGlow, fieldBar);
+
+      // Wx staleness check
+      if (lastWxFetch > 0) {
+        const age = Date.now() - lastWxFetch;
+        if (age > STALE_MS) {
+          wxStatus.textContent = 'WX: STALE (' + Math.floor(age / 60000) + 'm ago)';
+          wxStatus.className = 'wx-stale';
+        }
+      }
+    }
+
+    // ── Weather Icon from METAR ──
+    function getWxIcon(wx, clouds) {
+      const w = (wx || '').toLowerCase();
+      if (w.includes('ts') || w.includes('thunder'))  return '\u26C8\uFE0F';
+      if (w.includes('sn') || w.includes('snow'))     return '\u2744\uFE0F';
+      if (w.includes('fz') || w.includes('freez'))    return '\u{1F9CA}';
+      if (w.includes('ra') || w.includes('rain') || w.includes('dz')) return '\u{1F327}\uFE0F';
+      if (w.includes('fg') || w.includes('fog'))      return '\u{1F32B}\uFE0F';
+      if (w.includes('br') || w.includes('mist') || w.includes('hz') || w.includes('haze')) return '\u{1F32B}\uFE0F';
+      if (clouds) {
+        for (const c of clouds) {
+          if (c.cover === 'OVC' || c.cover === 'BKN') return '\u2601\uFE0F';
+          if (c.cover === 'SCT') return '\u26C5';
+          if (c.cover === 'FEW') return '\u{1F324}\uFE0F';
+        }
+      }
+      return '\u2600\uFE0F';
+    }
+
+    // ── Ceiling from cloud layers ──
+    function getCeiling(clouds) {
+      if (!clouds || clouds.length === 0) return 'CLR';
+      let lowest = null;
+      for (const c of clouds) {
+        if (c.cover === 'BKN' || c.cover === 'OVC') {
+          const base = c.base || 0;
+          if (lowest === null || base < lowest) lowest = base;
+        }
+      }
+      if (lowest !== null) return lowest.toLocaleString();
+      // No ceiling, report lowest layer
+      const first = clouds[0];
+      return (first.cover || 'CLR') + (first.base ? ' ' + first.base.toLocaleString() : '');
+    }
+
+    // ── Color-code metric values based on aviation severity ──
+    function _colorBase(el) {
+      return el.className.indexOf('hero-metric-value') >= 0 ? 'hero-metric-value' : 'airport-metric-value';
+    }
+    function colorWind(el, spd) {
+      var base = _colorBase(el);
+      if (!settings.colorCode) { el.className = base; return; }
+      el.className = base + (spd >= 35 ? ' val-red' : spd >= 30 ? ' val-amber' : spd >= 25 ? ' val-yellow' : '');
+    }
+    function colorVis(el, vis) {
+      var base = _colorBase(el);
+      if (!settings.colorCode) { el.className = base; return; }
+      const v = parseFloat(vis);
+      if (isNaN(v)) return;
+      el.className = base + (v < 3 ? ' val-red' : v < 5 ? ' val-amber' : v >= 5 ? ' val-green' : '');
+    }
+    function colorCeil(el, ceil) {
+      var base = _colorBase(el);
+      if (!settings.colorCode) { el.className = base; return; }
+      const c = parseInt(String(ceil).replace(/,/g, ''));
+      if (isNaN(c)) { el.className = base + ' val-green'; return; }
+      el.className = base + (c < 500 ? ' val-red' : c < 1000 ? ' val-amber' : c >= 3000 ? ' val-green' : '');
+    }
+    // Category color for card accent
+    const CAT_COLORS = {
+      VFR: '#34d399', MVFR: '#60a5fa', IFR: '#f87171', LIFR: '#c084fc'
+    };
+
+    // ── Format Observation Time ──
+    function fmtObs(t) {
+      if (!t) return '';
+      try {
+        const d = new Date(t);
+        return 'OBS ' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) + 'Z';
+      } catch(e) { return ''; }
+    }
+
+    // ── Calculate relative humidity from temp and dewpoint (Magnus formula) ──
+    function calcHumidity(tempC, dewpC) {
+      if (tempC === null || tempC === undefined || dewpC === null || dewpC === undefined) return '--';
+      const a = 17.625, b = 243.04;
+      const rh = 100 * Math.exp((a * dewpC) / (b + dewpC)) / Math.exp((a * tempC) / (b + tempC));
+      return Math.round(Math.min(100, Math.max(0, rh)));
+    }
+
+    // ── Apply Weather Data (DFW only) ──
+    function applyWx(latest) {
+      const obs = latest['KDFW'];
+      if (!obs) return;
+
+      const tempC  = obs.temp !== undefined && obs.temp !== null ? obs.temp : null;
+      const dewpC  = obs.dewp !== undefined && obs.dewp !== null ? obs.dewp : null;
+      const temp   = tempC !== null ? Math.round(tempC * 9/5 + 32) : '--';
+      const dewpt  = dewpC !== null ? Math.round(dewpC * 9/5 + 32) : '--';
+      const wdir   = obs.wdir !== undefined ? (obs.wdir === 0 && obs.wspd === 0 ? 'VRB' : pad3(obs.wdir)) : '--';
+      const wspd   = obs.wspd !== undefined && obs.wspd !== null ? Math.round(obs.wspd) : '--';
+      const windStr = wdir + '\u00B0/' + wspd;
+      const gustStr = obs.wgst ? Math.round(obs.wgst) : '--';
+      const vis    = obs.visib !== undefined && obs.visib !== null ? obs.visib : '--';
+      const ceil   = getCeiling(obs.clouds);
+      const alt    = obs.altim ? (obs.altim * 0.02953).toFixed(2) : '--';
+      const hum    = calcHumidity(tempC, dewpC);
+      const cat    = (obs.fltcat || '---').toUpperCase();
+      const catCls = 'cat-' + cat.toLowerCase();
+      const icon   = getWxIcon(obs.wxString, obs.clouds);
+      const raw    = obs.rawOb || '--';
+
+      $('dfw-temp').textContent   = temp;
+      $('dfw-dewpt').textContent  = dewpt;
+      $('dfw-wind').textContent   = windStr;
+      $('dfw-gust').textContent   = gustStr;
+      $('dfw-vis').textContent    = vis;
+      $('dfw-ceil').textContent   = ceil;
+      $('dfw-alt').textContent    = alt;
+      $('dfw-hum').textContent    = hum;
+      $('dfw-metar').textContent  = raw;
+      $('dfw-obs').textContent    = fmtObs(obs.obsTime || obs.reportTime);
+      const catEl = $('dfw-cat');
+      catEl.textContent = cat;
+      catEl.className = 'hero-conditions-badge ' + catCls;
+      $('dfw-icon').textContent = icon;
+      // Color-code critical values on hero card
+      colorWind($('dfw-wind'), obs.wspd || 0);
+      colorWind($('dfw-gust'), obs.wgst || 0);
+      colorVis($('dfw-vis'), vis);
+      colorCeil($('dfw-ceil'), ceil);
+    }
+
+    // ── Fetch Weather (bulletproof — errors never break the poll loop) ──
+    async function fetchWx() {
+      try {
+        const ids = Object.values(STATIONS).join(',');
+        const directUrl = WX_BASE + '?ids=' + ids + '&format=json&hours=1';
+
+        for (const proxy of WX_PROXIES) {
+          let url;
+          if (!proxy) {
+            url = directUrl;
+          } else if (proxy.includes('corsproxy.io')) {
+            // corsproxy.io expects the raw URL (not encoded)
+            url = proxy + encodeURIComponent(directUrl);
+          } else {
+            url = proxy + encodeURIComponent(directUrl);
+          }
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+
+            // Build lookup: latest per station
+            const latest = {};
+            if (Array.isArray(data)) {
+              data.forEach(ob => {
+                if (ob.icaoId) latest[ob.icaoId] = ob;
+              });
+            }
+
+            applyWx(latest);
+            lastWxFetch = Date.now();
+            consecutiveFetchErrors = 0;
+            wxStatus.textContent = 'WX: LIVE';
+            wxStatus.className = 'wx-ok';
+            console.log('Weather updated via ' + (proxy || 'direct') + ' (' + Object.keys(latest).length + ' stations)');
+            return; // success — stop trying proxies
+          } catch(e) {
+            console.warn('Weather fetch failed (' + (proxy || 'direct') + '):', e.message);
+          }
+        }
+
+        // All sources failed
+        consecutiveFetchErrors++;
+        console.error('Weather fetch error: all sources failed (' + consecutiveFetchErrors + ')');
+        wxStatus.textContent = 'WX: ERROR (' + consecutiveFetchErrors + ')';
+        wxStatus.className = 'wx-stale';
+        if (consecutiveFetchErrors >= MAX_CONSECUTIVE_ERRORS) {
+          console.warn('Too many consecutive fetch errors, reloading page...');
+          location.reload();
+        }
+      } catch(outerErr) {
+        // Absolute last resort — no error can escape and kill polling
+        console.error('fetchWx outer error (caught):', outerErr);
+        consecutiveFetchErrors++;
+        try {
+          wxStatus.textContent = 'WX: ERROR (' + consecutiveFetchErrors + ')';
+          wxStatus.className = 'wx-stale';
+        } catch(_) {}
+      }
+    }
+
+    // ── Self-healing fetch scheduler (replaces setInterval for wx) ──
+    // setTimeout-based loop: guarantees next fetch is always scheduled
+    // even if the previous one threw or hung.
+    let wxTimerId = null;
+    function scheduleNextFetch() {
+      if (wxTimerId) clearTimeout(wxTimerId);
+      wxTimerId = setTimeout(async function wxLoop() {
+        await fetchWx();
+        // Always schedule the next one, no matter what happened
+        wxTimerId = setTimeout(wxLoop, settings.wxPoll);
+      }, settings.wxPoll);
+    }
+
+    // ── Initialize ──
+    buildPips(fieldPips, FIELD);
+    // tick() will be replaced by tickWithFormat immediately in the settings engine below
+    let tickInterval = setInterval(tick, 1000);
+    tick();
+    fetchWx();
+    scheduleNextFetch();
+    // wxInterval set by settings engine below after it loads saved poll rate
+
+    // ═══════════════════════════════════════════════════════════════
+    // SETTINGS ENGINE
+    // ═══════════════════════════════════════════════════════════════
+
+    const THEMES = {
+      // ─── Dark Themes ───
+      dark: {
+        _dark: true,
+        '--bg-primary': '#0f1117', '--bg-secondary': '#161821',
+        '--bg-card': '#1c1e2a', '--bg-card-alt': '#22253a', '--bg-card-hover': '#282c42',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#2a2e3f', '--border-hover': '#3a3f55',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#5b7bf7', '--accent-hover': '#4568e0',
+        '--accent-subtle': 'rgba(91,123,247,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#2a2e3f', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
+      },
+      'dark-slate': {
+        _dark: true,
+        '--bg-primary': '#101214', '--bg-secondary': '#181a1e',
+        '--bg-card': '#1e2024', '--bg-card-alt': '#24272c', '--bg-card-hover': '#2c3036',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#2e3238', '--border-hover': '#3e4248',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#8295ad', '--accent-hover': '#6e839c',
+        '--accent-subtle': 'rgba(130,149,173,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#2e3238', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
+      },
+      'dark-ocean': {
+        _dark: true,
+        '--bg-primary': '#0c1220', '--bg-secondary': '#121a2c',
+        '--bg-card': '#182235', '--bg-card-alt': '#1e2a40', '--bg-card-hover': '#243248',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#263450', '--border-hover': '#344868',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#3b82f6', '--accent-hover': '#2563eb',
+        '--accent-subtle': 'rgba(59,130,246,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#263450', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
+      },
+      'dark-emerald': {
+        _dark: true,
+        '--bg-primary': '#0a1210', '--bg-secondary': '#101a16',
+        '--bg-card': '#162420', '--bg-card-alt': '#1c2e28', '--bg-card-hover': '#223830',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#243e34', '--border-hover': '#345548',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#34d399', '--accent-hover': '#10b981',
+        '--accent-subtle': 'rgba(52,211,153,0.12)',
+        '--accent-green': '#34d399', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#243e34', '--completed-dot': '#34d399',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
+      },
+      'dark-violet': {
+        _dark: true,
+        '--bg-primary': '#100e18', '--bg-secondary': '#161324',
+        '--bg-card': '#1e1a32', '--bg-card-alt': '#24203e', '--bg-card-hover': '#2c284a',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#302c4a', '--border-hover': '#403c62',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#a78bfa', '--accent-hover': '#8b5cf6',
+        '--accent-subtle': 'rgba(167,139,250,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#a78bfa',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#302c4a', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
+      },
+      'dark-rose': {
+        _dark: true,
+        '--bg-primary': '#140e10', '--bg-secondary': '#1e1418',
+        '--bg-card': '#281c22', '--bg-card-alt': '#30242a', '--bg-card-hover': '#382c32',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#3e3036', '--border-hover': '#544848',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#fb7185', '--accent-hover': '#f43f5e',
+        '--accent-subtle': 'rgba(251,113,133,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#fb7185', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#3e3036', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
+      },
+      // ─── Light Themes ───
+      light: {
+        _dark: false,
+        '--bg-primary': '#f0f2f5', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#f8f9fb', '--bg-card-hover': '#f0f2f5',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#e2e5ea', '--border-hover': '#cbd0d8',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#4f6bed', '--accent-hover': '#3d57d9',
+        '--accent-subtle': 'rgba(79,107,237,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#7c3aed',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#e2e5ea', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-slate': {
+        _dark: false,
+        '--bg-primary': '#f1f5f9', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#f8fafc', '--bg-card-hover': '#f1f5f9',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#e2e8f0', '--border-hover': '#cbd5e1',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#475569', '--accent-hover': '#334155',
+        '--accent-subtle': 'rgba(71,85,105,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#6366f1',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#e2e8f0', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-ocean': {
+        _dark: false,
+        '--bg-primary': '#f0f7ff', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#f5f9ff', '--bg-card-hover': '#edf4ff',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#dbeafe', '--border-hover': '#bfdbfe',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#2563eb', '--accent-hover': '#1d4ed8',
+        '--accent-subtle': 'rgba(37,99,235,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#7c3aed',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#dbeafe', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-emerald': {
+        _dark: false,
+        '--bg-primary': '#f0fdf4', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#f7fdf9', '--bg-card-hover': '#ecfdf5',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#d1fae5', '--border-hover': '#a7f3d0',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#059669', '--accent-hover': '#047857',
+        '--accent-subtle': 'rgba(5,150,105,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#7c3aed',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#d1fae5', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-violet': {
+        _dark: false,
+        '--bg-primary': '#f5f3ff', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#faf8ff', '--bg-card-hover': '#f3f0ff',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#e9e5f5', '--border-hover': '#d8d0f0',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#7c3aed', '--accent-hover': '#6d28d9',
+        '--accent-subtle': 'rgba(124,58,237,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#6d28d9',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#e9e5f5', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-rose': {
+        _dark: false,
+        '--bg-primary': '#fff5f5', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#fef7f7', '--bg-card-hover': '#fff0f0',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#fce7e7', '--border-hover': '#fcd5d5',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#e11d48', '--accent-hover': '#be123c',
+        '--accent-subtle': 'rgba(225,29,72,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#7c3aed',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#fce7e7', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      }
+    };
+
+    // Settings state + localStorage load is above (before color functions) to avoid temporal dead zone
+
+    // wxInterval kept for backward compat with settings change handler
+    let wxInterval = null;
+
+    function saveSettings() {
+      try { localStorage.setItem('ops-settings', JSON.stringify(settings)); } catch(e) {}
+    }
+
+    // ── Apply Theme ──
+    function applyTheme(name) {
+      const theme = THEMES[name] || THEMES['dark'];
+      if (!theme) return;
+      const root = document.documentElement;
+      for (const [key, val] of Object.entries(theme)) {
+        if (key.startsWith('--')) root.style.setProperty(key, val);
+      }
+      // Toggle light-mode class for non-variable styling
+      document.body.classList.toggle('light-mode', !theme._dark);
+      // Save vars to localStorage for sub-page theme sync
+      try {
+        const vars = {};
+        for (const [k, v] of Object.entries(theme)) { if (k.startsWith('--')) vars[k] = v; }
+        localStorage.setItem('ops-theme-vars', JSON.stringify(vars));
+        localStorage.setItem('ops-theme-dark', theme._dark ? '1' : '0');
+      } catch(e) {}
+      // Update active card
+      document.querySelectorAll('.theme-card').forEach(c => {
+        c.classList.toggle('active', c.dataset.theme === name);
+      });
+      settings.theme = name;
+      saveSettings();
+    }
+
+    // ── Apply Display Settings ──
+    function applyDisplaySettings() {
+      // Scanlines
+      const scanEl = document.querySelector('.scanlines');
+      if (scanEl) scanEl.style.display = settings.scanlines ? '' : 'none';
+      $('toggle-scanlines').classList.toggle('on', settings.scanlines);
+
+      // BG Animation
+      const bgMesh = document.querySelector('.bg-mesh');
+      if (bgMesh) bgMesh.style.display = settings.bgAnim ? '' : 'none';
+      $('toggle-bg-anim').classList.toggle('on', settings.bgAnim);
+
+      // Hover effects
+      document.body.classList.toggle('no-hover', !settings.hoverEffects);
+      $('toggle-hover').classList.toggle('on', settings.hoverEffects);
+
+      // Metric color coding
+      document.body.classList.toggle('no-color-code', !settings.colorCode);
+      $('toggle-color-code').classList.toggle('on', settings.colorCode);
+
+      // Category accent bars
+      document.body.classList.toggle('no-cat-accent', !settings.catAccent);
+      $('toggle-cat-accent').classList.toggle('on', settings.catAccent);
+
+      // Raw METAR
+      document.querySelectorAll('.airport-metar-raw, .hero-metar-raw').forEach(el => {
+        el.style.display = settings.showMetar ? '' : 'none';
+      });
+      $('toggle-metar').classList.toggle('on', settings.showMetar);
+
+      // Clock format
+      $('select-clock-fmt').value = settings.clockFmt;
+
+      // Wx poll
+      $('select-wx-poll').value = String(settings.wxPoll);
+
+      // Scale
+      document.querySelector('.dashboard').style.transform = 'scale(' + (settings.scale / 100) + ')';
+      document.querySelector('.dashboard').style.transformOrigin = 'top left';
+      if (settings.scale !== 100) {
+        document.querySelector('.dashboard').style.width = (100 / (settings.scale / 100)) + 'vw';
+        document.querySelector('.dashboard').style.height = 'calc(' + (100 / (settings.scale / 100)) + 'vh - var(--bar-height))';
+      } else {
+        document.querySelector('.dashboard').style.width = '';
+        document.querySelector('.dashboard').style.height = '';
+        document.querySelector('.dashboard').style.transform = '';
+      }
+      $('range-scale').value = settings.scale;
+      $('scale-val').textContent = settings.scale + '%';
+
+      // Brightness
+      document.body.style.filter = settings.brightness < 100 ? 'brightness(' + (settings.brightness / 100) + ')' : '';
+      $('range-brightness').value = settings.brightness;
+      $('brightness-val').textContent = settings.brightness + '%';
+    }
+
+    // ── Update Clock with format setting ──
+    // Override tick to respect clock format
+    function tickWithFormat() {
+      const now = new Date();
+      let h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+      if (settings.clockFmt === '12h') {
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        clockEl.textContent = pad2(h) + ':' + pad2(m) + ':' + pad2(s) + ' ' + ampm;
+        panelLocalClock.textContent = pad2(h) + ':' + pad2(m) + ':' + pad2(s) + ' ' + ampm;
+      } else {
+        clockEl.textContent = pad2(h) + ':' + pad2(m) + ':' + pad2(s);
+        panelLocalClock.textContent = pad2(now.getHours()) + ':' + pad2(m) + ':' + pad2(s);
+      }
+      panelUtcClock.textContent = pad2(now.getUTCHours()) + ':' + pad2(now.getUTCMinutes()) + ':' + pad2(now.getUTCSeconds());
+      const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+      const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      dateEl.textContent = days[now.getDay()] + ' ' + pad2(now.getDate()) + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+      panelClockDate.textContent = days[now.getDay()] + ' ' + pad2(now.getDate()) + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+      updateSection(now, FIELD, fieldPips, fieldSec, fieldCD, fieldNx, fieldRing, fieldGlow, fieldBar);
+      if (lastWxFetch > 0) {
+        const age = Date.now() - lastWxFetch;
+        if (age > STALE_MS) {
+          wxStatus.textContent = 'WX: STALE (' + Math.floor(age / 60000) + 'm ago)';
+          wxStatus.className = 'wx-stale';
+        }
+      }
+    }
+
+    // Replace the existing interval with the format-aware version
+    clearInterval(tickInterval);
+    tickInterval = setInterval(tickWithFormat, 1000);
+    tickWithFormat();
+
+    // ── Settings Modal Open/Close ──
+    const overlay = $('settings-overlay');
+
+    $('settings-btn').addEventListener('click', () => {
+      overlay.classList.add('open');
+    });
+
+    $('settings-close').addEventListener('click', () => {
+      overlay.classList.remove('open');
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') overlay.classList.remove('open');
+    });
+
+    // ── Theme Cards ──
+    document.querySelectorAll('.theme-card').forEach(card => {
+      card.addEventListener('click', () => {
+        applyTheme(card.dataset.theme);
+      });
+    });
+
+    // ── Toggle Switches ──
+    $('toggle-scanlines').addEventListener('click', () => {
+      settings.scanlines = !settings.scanlines;
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    $('toggle-bg-anim').addEventListener('click', () => {
+      settings.bgAnim = !settings.bgAnim;
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    $('toggle-hover').addEventListener('click', () => {
+      settings.hoverEffects = !settings.hoverEffects;
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    $('toggle-color-code').addEventListener('click', () => {
+      settings.colorCode = !settings.colorCode;
+      applyDisplaySettings();
+      saveSettings();
+      fetchWx(); // re-apply colors
+    });
+
+    $('toggle-cat-accent').addEventListener('click', () => {
+      settings.catAccent = !settings.catAccent;
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    $('toggle-metar').addEventListener('click', () => {
+      settings.showMetar = !settings.showMetar;
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    // ── Select Dropdowns ──
+    $('select-clock-fmt').addEventListener('change', (e) => {
+      settings.clockFmt = e.target.value;
+      saveSettings();
+      tickWithFormat();
+    });
+
+    $('select-wx-poll').addEventListener('change', (e) => {
+      settings.wxPoll = parseInt(e.target.value);
+      saveSettings();
+      // Restart weather polling with new interval
+      if (wxInterval) clearInterval(wxInterval);
+      wxInterval = null;
+      scheduleNextFetch();
+    });
+
+    // ── Range Sliders ──
+    $('range-scale').addEventListener('input', (e) => {
+      settings.scale = parseInt(e.target.value);
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    $('range-brightness').addEventListener('input', (e) => {
+      settings.brightness = parseInt(e.target.value);
+      applyDisplaySettings();
+      saveSettings();
+    });
+
+    // ── Apply saved settings on load ──
+    applyTheme(settings.theme);
+    applyDisplaySettings();
+    // Start wx polling with self-healing scheduler
+    scheduleNextFetch();
+
+    // ═══════════════════════════════════════════════════════════════
+    // UNATTENDED DISPLAY STABILITY
+    // ═══════════════════════════════════════════════════════════════
+
+    // ═══════════════════════════════════════════════════════════════
+    // HARD PAGE REFRESH (F5 equivalent) every 40 minutes
+    // ═══════════════════════════════════════════════════════════════
+    setInterval(function() {
+      console.log('Hard refresh triggered (' + Math.round(HARD_REFRESH_MS / 60000) + ' min cycle)');
+      location.reload();
+    }, HARD_REFRESH_MS);
+
+    // ═══════════════════════════════════════════════════════════════
+    // WATCHDOG: if weather hasn't updated in 10 min, force re-fetch
+    // ═══════════════════════════════════════════════════════════════
+    setInterval(function() {
+      try {
+        const now = Date.now();
+        const sinceLastFetch = lastWxFetch > 0 ? now - lastWxFetch : Infinity;
+
+        // HARD RELOAD: if no successful update in 15 min, do a full page reload to recover
+        if (sinceLastFetch >= RELOAD_AFTER_STALE_MS) {
+          console.error('Watchdog: no weather update for ' + Math.floor(sinceLastFetch / 60000) + 'm — hard reloading page');
+          location.reload();
+          return;
+        }
+
+        // If we haven't had a successful fetch in WATCHDOG_STALE_LIMIT, force one now
+        if (sinceLastFetch > WATCHDOG_STALE_LIMIT) {
+          console.warn('Watchdog: weather data stale for ' + Math.floor(sinceLastFetch / 60000) + 'm — forcing re-fetch');
+          consecutiveFetchErrors = 0; // reset so we get fresh retry attempts
+          fetchWx();
+          // Also restart the polling scheduler in case it died
+          scheduleNextFetch();
+        }
+
+        // If tick interval seems dead (clock frozen), restart it
+        if (clockEl && clockEl.textContent === '--:--:--') {
+          console.warn('Watchdog: clock appears frozen — restarting tick');
+          clearInterval(tickInterval);
+          tickInterval = setInterval(tickWithFormat, 1000);
+          tickWithFormat();
+        }
+      } catch(e) {
+        console.error('Watchdog error:', e);
+      }
+    }, WATCHDOG_INTERVAL);
+
+    // ── Visibility API: refresh data immediately when tab regains focus ──
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        console.log('Tab visible — refreshing data');
+        tickWithFormat();
+        fetchWx();
+        scheduleNextFetch();
+      }
+    });
+
+    // ── Network reconnect: fetch immediately when coming back online ──
+    window.addEventListener('online', function() {
+      console.log('Network restored — fetching weather');
+      wxStatus.textContent = 'WX: RECONNECTING...';
+      wxStatus.className = 'wx-stale';
+      consecutiveFetchErrors = 0;
+      fetchWx();
+      scheduleNextFetch();
+    });
+
+    window.addEventListener('offline', function() {
+      console.warn('Network lost');
+      wxStatus.textContent = 'WX: OFFLINE';
+      wxStatus.className = 'wx-stale';
+    });
+
+    // ── Global error handler: prevent silent JS death ──
+    window.addEventListener('error', function(e) {
+      console.error('Uncaught error:', e.message, e.filename, e.lineno);
+      window.__errCount = (window.__errCount || 0) + 1;
+      if (window.__errCount >= 3) {
+        console.warn('Multiple uncaught errors, reloading page...');
+        setTimeout(function() { location.reload(); }, 5000);
+      }
+    });
+
+    // ── Unhandled promise rejection handler ──
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Unhandled promise rejection:', e.reason);
+      e.preventDefault();
+    });
+
+    console.log('Operations Command Center initialized — hard refresh every ' + Math.round(HARD_REFRESH_MS / 60000) + 'm, watchdog every ' + Math.round(WATCHDOG_INTERVAL / 1000) + 's, reload if stale ' + Math.round(RELOAD_AFTER_STALE_MS / 60000) + 'm');
+  </script>
+</body>
+</html>
