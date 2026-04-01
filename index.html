@@ -7,95 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
 <style>
-  :root {
-    --bg-primary:    #060a14;
-    --bg-card:       rgba(15, 23, 42, 0.65);
-    --bg-card-alt:   rgba(22, 33, 55, 0.55);
-    --bg-card-hover: rgba(30, 42, 66, 0.7);
-    --border-color:  rgba(56, 189, 248, 0.08);
-    --border-glow:   rgba(56, 189, 248, 0.22);
-    --text-primary:  #e2e8f0;
-    --text-muted:    #64748b;
-    --text-dim:      #475569;
-    --accent:        #38bdf8;
-    --accent-glow:   rgba(56, 189, 248, 0.35);
-    --accent-green:  #34d399;
-    --accent-amber:  #fbbf24;
-    --accent-red:    #f87171;
-    --accent-purple: #a78bfa;
-    --alert-bg:      rgba(251, 191, 36, 0.06);
-    --alert-border:  rgba(251, 191, 36, 0.4);
-    --alert-text:    #fbbf24;
-    --alert-glow:    rgba(251, 191, 36, 0.3);
-    --completed-dot: #34d399;
-    --upcoming-dot:  rgba(30, 41, 59, 0.6);
-    --glass-blur:    blur(20px);
-    --ring-size:     clamp(9rem, 20vmin, 20rem);
-    --bar-height:    3.2vh;
-  }
-
-  *, *::before, *::after {
-    margin: 0; padding: 0; box-sizing: border-box;
-  }
-
-  html, body {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-  }
-
-  /* ── Animated Background ── */
-  .bg-mesh {
-    position: fixed; inset: 0; z-index: 0;
-    overflow: hidden; pointer-events: none;
-  }
-  .bg-mesh::before, .bg-mesh::after {
-    content: ''; position: absolute;
-    border-radius: 50%; filter: blur(120px); opacity: 0.25;
-  }
-  .bg-mesh::before {
-    width: 55vw; height: 55vw;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.45), transparent 70%);
-    top: -20%; left: -12%;
-    animation: mf1 25s ease-in-out infinite alternate;
-  }
-  .bg-mesh::after {
-    width: 45vw; height: 45vw;
-    background: radial-gradient(circle, rgba(14, 165, 233, 0.38), transparent 70%);
-    bottom: -18%; right: -8%;
-    animation: mf2 30s ease-in-out infinite alternate;
-  }
-  .bg-orb {
-    position: absolute; width: 38vw; height: 38vw;
-    border-radius: 50%; filter: blur(120px); opacity: 0.2;
-    background: radial-gradient(circle, rgba(52, 211, 153, 0.2), transparent 70%);
-    top: 55%; left: 30%;
-    animation: mf3 22s ease-in-out infinite alternate;
-  }
-  .bg-orb2 {
-    position: absolute; width: 30vw; height: 30vw;
-    border-radius: 50%; filter: blur(120px); opacity: 0.18;
-    background: radial-gradient(circle, rgba(251, 191, 36, 0.12), transparent 70%);
-    top: 10%; right: 20%;
-    animation: mf4 28s ease-in-out infinite alternate;
-  }
-  @keyframes mf1 { from { transform: translate(0,0) scale(1) } to { transform: translate(4vw, 6vh) scale(1.18) } }
-  @keyframes mf2 { from { transform: translate(0,0) scale(1) } to { transform: translate(-5vw,-4vh) scale(1.12) } }
-  @keyframes mf3 { from { transform: translate(0,0) scale(1) } to { transform: translate(6vw,-5vh) scale(0.88) } }
-  @keyframes mf4 { from { transform: translate(0,0) scale(1) } to { transform: translate(-3vw, 4vh) scale(1.08) } }
-
-  /* ── Scanlines Overlay ── */
-  .scanlines {
-    position: fixed; inset: 0; z-index: 2; pointer-events: none;
-    background: repeating-linear-gradient(
-      0deg, transparent, transparent 2px,
-      rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
-    );
-  }
 
   /* ── Main Layout ── */
   .dashboard {
@@ -115,7 +28,7 @@
   .left-panel::after {
     content: ''; position: absolute;
     top: 5%; right: 0; bottom: 5%; width: 1px;
-    background: linear-gradient(180deg, transparent, var(--accent-glow), transparent);
+    background: var(--border-color);
   }
 
   /* ── Right Panel ── */
@@ -153,11 +66,10 @@
     font-size: clamp(3.5rem, 8vmin, 8rem);
     font-weight: 700; color: var(--accent);
     line-height: 1;
-    text-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(56,189,248,0.08);
   }
   .clock-divider {
     width: 40%; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+    background: var(--border-color);
   }
   .clock-date {
     font-family: 'JetBrains Mono', monospace;
@@ -169,23 +81,21 @@
   /* ── Section Cards (Countdown) ── */
   .section-card {
     background: var(--bg-card);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border-color);
-    border-radius: 1.2vmin;
+    border-radius: var(--radius-md);
     padding: 1.5vh 1.2vw;
     display: flex; flex-direction: column;
     justify-content: center; align-items: center;
     position: relative; overflow: hidden;
-    transition: background 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(56, 189, 248, 0.04);
-    animation: cardIn 0.8s ease-out both;
+    transition: background 0.3s ease, border-color 0.3s ease;
+    box-shadow: var(--shadow-md);
+    animation: cardIn 0.4s ease-out both;
   }
-  .section-card:nth-child(2) { animation-delay: 0.15s; }
+  .section-card:nth-child(2) { animation-delay: 0.08s; }
 
   @keyframes cardIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.98); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .section-label {
@@ -196,7 +106,6 @@
   .section-title {
     font-size: clamp(2rem, 4vmin, 4rem);
     font-weight: 800; color: var(--accent); margin-bottom: 0.1vh;
-    text-shadow: 0 0 25px var(--accent-glow), 0 0 50px rgba(56, 189, 248, 0.1);
     letter-spacing: 0.05vw;
   }
 
@@ -212,22 +121,20 @@
     width: 100%; height: 100%;
     transform: rotate(-90deg);
   }
-  .ring-track  { fill: none; stroke: rgba(56, 189, 248, 0.06); stroke-width: 3; }
+  .ring-track  { fill: none; stroke: var(--border-color); stroke-width: 3; }
   .ring-fill   {
     fill: none; stroke: var(--accent); stroke-width: 3.5;
     stroke-linecap: round;
-    transition: stroke-dashoffset 1s linear, stroke 0.6s ease;
-    filter: drop-shadow(0 0 8px var(--accent-glow));
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
   }
   .ring-glow   {
     fill: none; stroke: var(--accent); stroke-width: 7;
-    stroke-linecap: round; opacity: 0.12;
-    transition: stroke-dashoffset 1s linear, stroke 0.6s ease;
+    stroke-linecap: round; opacity: 0.08;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
     filter: blur(4px);
   }
   .ring-fill.alert-ring, .ring-glow.alert-ring {
     stroke: var(--accent-amber);
-    filter: drop-shadow(0 0 10px var(--alert-glow));
   }
 
   .countdown-value {
@@ -248,19 +155,17 @@
   /* ── Progress Bar ── */
   .progress-track {
     position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
-    background: rgba(255,255,255,0.03);
+    background: rgba(0,0,0,0.04);
     border-radius: 0 0 1.2vmin 1.2vmin; overflow: hidden;
   }
   .progress-fill {
     height: 100%; width: 0%;
     background: linear-gradient(90deg, var(--accent), var(--accent-green));
     border-radius: 0 2px 2px 0;
-    transition: width 1s linear, background 0.6s ease;
-    box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+    transition: width 1s linear, background 0.3s ease;
   }
   .progress-fill.alert-progress {
     background: linear-gradient(90deg, var(--accent-amber), var(--accent-red));
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
   }
 
   /* ── Timeline Pips ── */
@@ -276,9 +181,9 @@
     right: calc(clamp(0.3rem, 0.65vmin, 0.6rem));
     height: 2px;
     background: linear-gradient(90deg,
-      rgba(52,211,153,0.4) 0%,
-      rgba(71,85,105,0.3) 50%,
-      rgba(30,41,59,0.2) 100%);
+      rgba(22,163,74,0.3) 0%,
+      rgba(148,163,184,0.2) 50%,
+      rgba(226,229,234,0.3) 100%);
     z-index: 0; border-radius: 1px;
   }
   .pip {
@@ -300,39 +205,23 @@
   }
   .pip.completed .pip-dot {
     background: var(--completed-dot); border-color: var(--completed-dot);
-    box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
   }
   .pip.completed .pip-time { color: var(--completed-dot); }
   .pip.current .pip-dot {
     background: var(--accent-amber); border-color: var(--accent-amber);
-    box-shadow: 0 0 8px var(--accent-amber), 0 0 18px rgba(251,191,36,0.35);
-    animation: pipPulse 1.5s ease-in-out infinite;
   }
   .pip.current .pip-time { color: var(--accent-amber); font-weight: 700; }
-
-  @keyframes pipPulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(251,191,36,0.4), 0 0 12px rgba(251,191,36,0.15); }
-    50%      { box-shadow: 0 0 12px rgba(251,191,36,0.9), 0 0 24px rgba(251,191,36,0.35); }
-  }
 
   /* ── Alert State ── */
   .section-card.alert-active {
     background: var(--alert-bg);
     border-color: var(--alert-border);
-    box-shadow: 0 0 50px rgba(251,191,36,0.1), inset 0 0 0 1px rgba(251,191,36,0.12);
-    animation: secPulse 2s ease-in-out infinite;
   }
   .section-card.alert-active .countdown-value {
     color: var(--alert-text);
-    text-shadow: 0 0 25px var(--alert-glow), 0 0 50px rgba(251,191,36,0.15);
   }
   .section-card.alert-active .section-title {
     color: var(--alert-text);
-    text-shadow: 0 0 20px var(--alert-glow);
-  }
-  @keyframes secPulse {
-    0%, 100% { box-shadow: 0 0 35px rgba(251,191,36,0.08), inset 0 0 0 1px rgba(251,191,36,0.08); }
-    50%      { box-shadow: 0 0 60px rgba(251,191,36,0.2), inset 0 0 0 1px rgba(251,191,36,0.18); }
   }
 
   /* ── Weather Panel Header ── */
@@ -350,9 +239,9 @@
     font-size: clamp(0.8rem, 1.4vmin, 1.3rem);
     color: var(--text-dim);
     padding: 0.2vh 0.5vw;
-    background: rgba(255,255,255,0.03);
+    background: var(--bg-card-alt);
     border-radius: 0.3vmin;
-    border: 1px solid rgba(255,255,255,0.04);
+    border: 1px solid var(--border-color);
   }
 
   /* ── Weather Content ── */\n  .wx-content {\n    min-height: 0;\n  }
@@ -360,33 +249,17 @@
   /* ── DFW Hero Card ── */
   .weather-hero {
     background: var(--bg-card);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border-color);
-    border-radius: 1vmin;
+    border-radius: var(--radius-md);
     padding: 1.8vh 1.5vw;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: 1fr auto;
     gap: 0.5vh 1.5vw;
     align-items: center;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(56,189,248,0.05);
-    animation: cardIn 0.8s ease-out 0.2s both;
+    box-shadow: var(--shadow-md);
+    animation: cardIn 0.4s ease-out 0.1s both;
     position: relative; overflow: hidden;
-  }
-  .weather-hero::before {
-    content: ''; position: absolute; top: -1px; left: -1px;
-    width: 50px; height: 50px;
-    border-top: 2px solid var(--accent);
-    border-left: 2px solid var(--accent);
-    border-radius: 1vmin 0 0 0; opacity: 0.3;
-  }
-  .weather-hero::after {
-    content: ''; position: absolute; bottom: -1px; right: -1px;
-    width: 50px; height: 50px;
-    border-bottom: 2px solid var(--accent);
-    border-right: 2px solid var(--accent);
-    border-radius: 0 0 1vmin 0; opacity: 0.3;
   }
 
   .hero-left {
@@ -398,7 +271,6 @@
     font-family: 'Inter', sans-serif;
     font-size: clamp(4rem, 8.5vmin, 8.5rem);
     font-weight: 800; color: var(--accent); line-height: 1;
-    text-shadow: 0 0 35px var(--accent-glow), 0 0 70px rgba(56,189,248,0.12);
   }
   .hero-airport-name {
     font-size: clamp(0.9rem, 1.6vmin, 1.5rem);
@@ -417,7 +289,6 @@
   .hero-wx-icon {
     font-size: clamp(2.5rem, 4.5vmin, 4.5rem);
     line-height: 1;
-    filter: drop-shadow(0 0 4px rgba(255,255,255,0.15));
   }
   .hero-obs-time {
     font-family: 'JetBrains Mono', monospace;
@@ -437,8 +308,8 @@
     align-items: center; gap: 0.1vh;
     padding: 0.5vh 0.3vw;
     border-radius: 0.4vmin;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.02);
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
   }
   .hero-metric-label {
     font-size: clamp(0.75rem, 1.3vmin, 1.2rem);
@@ -460,47 +331,47 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
     color: var(--text-dim);
-    background: rgba(0,0,0,0.3);
+    background: var(--bg-card-alt);
     padding: 0.5vh 0.6vw;
     border-radius: 0.3vmin;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    border: 1px solid rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
   }
 
-  /* ── Flight Category Badges ── */
+  /* ── Flight Category Badges (dark default) ── */
   .cat-vfr  { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
   .cat-mvfr { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
   .cat-ifr  { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
-  .cat-lifr { background: rgba(232,121,249,0.12); color: #e879f9; border: 1px solid rgba(232,121,249,0.2); }
+  .cat-lifr { background: rgba(192,132,252,0.12); color: #c084fc; border: 1px solid rgba(192,132,252,0.2); }
+  body.light-mode .cat-vfr  { background: rgba(22,163,74,0.08); color: #15803d; border-color: rgba(22,163,74,0.2); }
+  body.light-mode .cat-mvfr { background: rgba(79,107,237,0.08); color: #3b5bdb; border-color: rgba(79,107,237,0.2); }
+  body.light-mode .cat-ifr  { background: rgba(220,38,38,0.08); color: #dc2626; border-color: rgba(220,38,38,0.2); }
+  body.light-mode .cat-lifr { background: rgba(124,58,237,0.08); color: #7c3aed; border-color: rgba(124,58,237,0.2); }
   .wx-ok    { color: var(--text-muted); }
-  .wx-stale { color: var(--accent-amber); text-shadow: 0 0 8px rgba(251,191,36,0.3); }
+  .wx-stale { color: var(--accent-amber); }
 
   /* ── Airport Grid ── */
   .airport-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: 0.6vh 0.5vw;
     overflow: visible;
     min-height: 0;
   }
-  /* Row 1: 4 cards × 3 cols each = 12 */
-  .airport-card:nth-child(-n+4) { grid-column: span 3; }
+  /* Row 1: 3 cards × 4 cols each = 12 */
+  .airport-card:nth-child(-n+3) { grid-column: span 4; }
   /* Row 2: 3 cards × 4 cols each = 12 */
-  .airport-card:nth-child(n+5):nth-child(-n+7)  { grid-column: span 4; }
-  /* Row 3: 3 cards × 4 cols each = 12 */
-  .airport-card:nth-child(n+8)  { grid-column: span 4; }
+  .airport-card:nth-child(n+4)  { grid-column: span 4; }
 
   .airport-card {
     background: var(--bg-card-alt);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
     border: 1px solid var(--border-color);
-    border-radius: 0.8vmin;
+    border-radius: var(--radius-md);
     padding: 0.8vh 0.6vw;
     display: flex; flex-direction: column; gap: 0.3vh;
-    transition: all 0.3s ease;
-    animation: cardIn 0.6s ease-out both;
+    transition: all 0.2s ease;
+    animation: cardIn 0.4s ease-out both;
     position: relative; overflow: hidden;
     min-height: 0;
   }
@@ -513,8 +384,7 @@
   .airport-card:nth-child(7) { animation-delay: .55s; }
   .airport-card:hover {
     background: var(--bg-card-hover);
-    border-color: var(--border-glow);
-    box-shadow: 0 0 25px rgba(56,189,248,0.06);
+    border-color: var(--border-hover);
     transform: translateY(-1px);
   }
   body.no-hover .airport-card:hover {
@@ -539,7 +409,7 @@
   }
   .airport-header-temp {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(1.4rem, 2.8vmin, 2.8rem);
+    font-size: clamp(2rem, 3.8vmin, 3.8rem);
     font-weight: 700; color: var(--text-primary);
     line-height: 1;
   }
@@ -550,20 +420,19 @@
     display: flex; align-items: center; gap: 0.3vw;
   }
   .airport-icao {
-    font-size: clamp(1.4rem, 2.8vmin, 2.8rem);
+    font-size: clamp(2rem, 3.8vmin, 3.8rem);
     font-weight: 800; color: var(--accent);
-    text-shadow: 0 0 14px rgba(56,189,248,0.25);
   }
   .airport-wx-icon {
-    font-size: clamp(0.9rem, 1.8vmin, 1.8rem);
+    font-size: clamp(1.3rem, 2.5vmin, 2.5rem);
   }
   .airport-name {
-    font-size: clamp(0.5rem, 0.9vmin, 0.85rem);
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
     color: var(--text-dim); text-transform: uppercase;
     letter-spacing: 0.05vw; line-height: 1;
   }
   .airport-conditions {
-    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
+    font-size: clamp(1rem, 1.8vmin, 1.7rem);
     padding: 0.15vh 0.35vw; border-radius: 0.3vmin; font-weight: 700;
   }
 
@@ -579,53 +448,56 @@
     min-width: 0;
     padding: 0.2vh 0.15vw;
     border-radius: 0.3vmin;
-    background: rgba(255,255,255,0.015);
+    background: var(--bg-metric);
     overflow: hidden;
   }
   .airport-metric-label {
-    font-size: clamp(0.45rem, 0.8vmin, 0.8rem);
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
     color: var(--text-dim); text-transform: uppercase;
     letter-spacing: 0.04vw; line-height: 1.1;
   }
   .airport-metric-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(0.7rem, 1.5vmin, 1.5rem);
+    font-size: clamp(1.3rem, 2.5vmin, 2.5rem);
     font-weight: 700; color: var(--text-primary);
     white-space: nowrap;
     line-height: 1.15;
     text-align: center;
   }
 
-  /* ── Metric Value Color Coding ── */
-  .val-green  { color: #34d399; text-shadow: 0 0 6px rgba(52,211,153,0.2); }
-  .val-yellow { color: #facc15; text-shadow: 0 0 6px rgba(250,204,21,0.2); }
-  .val-amber  { color: #fbbf24; text-shadow: 0 0 6px rgba(251,191,36,0.2); }
-  .val-red    { color: #f87171; text-shadow: 0 0 6px rgba(248,113,113,0.25); }
+  /* ── Metric Value Color Coding (dark default) ── */
+  .val-green  { color: #3dbb78; }
+  .val-yellow { color: #fbbf24; }
+  .val-amber  { color: #f59e0b; }
+  .val-red    { color: #f87171; }
+  body.light-mode .val-green  { color: #16a34a; }
+  body.light-mode .val-yellow { color: #ca8a04; }
+  body.light-mode .val-amber  { color: #d97706; }
+  body.light-mode .val-red    { color: #dc2626; }
 
   /* ── Flight Category Card Accent ── */
   .airport-card::before {
     content: ''; position: absolute; top: 8%; bottom: 8%;
     left: 0; width: 3px; border-radius: 0 2px 2px 0;
     background: var(--card-cat-color, transparent);
-    box-shadow: 0 0 8px var(--card-cat-color, transparent);
-    transition: background 0.5s ease, box-shadow 0.5s ease;
+    transition: background 0.3s ease;
   }
 
   /* Row 2 cards get slightly bigger metric values since they have more room */
-  .airport-card:nth-child(n+5) .airport-metric-value {
-    font-size: clamp(0.8rem, 1.7vmin, 1.7rem);
+  .airport-card:nth-child(n+4) .airport-metric-value {
+    font-size: clamp(1.5rem, 2.8vmin, 2.8rem);
   }
-  .airport-card:nth-child(n+5) .airport-icao {
-    font-size: clamp(1.6rem, 3.2vmin, 3.2rem);
+  .airport-card:nth-child(n+4) .airport-icao {
+    font-size: clamp(2.2rem, 4.2vmin, 4.2rem);
   }
 
   .airport-metar-raw {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(0.5rem, 0.9vmin, 0.85rem);
+    font-size: clamp(0.7rem, 1.3vmin, 1.2rem);
     color: var(--text-dim); opacity: 0.5;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     margin-top: auto; padding-top: 0.2vh;
-    border-top: 1px solid rgba(255,255,255,0.03);
+    border-top: 1px solid var(--border-color);
     flex-shrink: 0;
   }
 
@@ -633,10 +505,8 @@
   .bottom-bar {
     position: fixed; bottom: 0; left: 0;
     width: 100vw; height: var(--bar-height);
-    background: rgba(6,10,20,0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid rgba(56,189,248,0.08);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
     display: flex; justify-content: space-between;
     align-items: center;
     padding: 0 1.5vw;
@@ -656,7 +526,6 @@
     font-family: 'JetBrains Mono', monospace;
     color: var(--accent); font-variant-numeric: tabular-nums;
     font-weight: 700; font-size: clamp(1rem, 1.8vmin, 1.7rem);
-    text-shadow: 0 0 10px rgba(56,189,248,0.2);
   }
 
   /* ── Alert Page Mini Buttons ── */
@@ -666,18 +535,18 @@
     font-size: clamp(0.7rem, 1.2vmin, 1.1rem);
     padding: 0.2vh 0.35vw;
     border-radius: 0.3vmin;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-alt);
     color: var(--text-dim);
     line-height: 1;
     transition: all 0.25s ease;
     cursor: pointer;
   }
-  .alert-btn:hover { color: var(--text-muted); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); transform: scale(1.1); }
+  .alert-btn:hover { color: var(--text-primary); border-color: var(--border-hover); background: var(--bg-card-hover); transform: scale(1.1); }
 
   /* ── Settings Button ── */
   .settings-btn {
-    background: rgba(255,255,255,0.04);
+    background: var(--bg-card-alt);
     border: 1px solid var(--border-color);
     border-radius: 0.4vmin;
     color: var(--text-muted);
@@ -689,9 +558,8 @@
     letter-spacing: 0.05vw;
   }
   .settings-btn:hover {
-    color: var(--accent); border-color: var(--border-glow);
-    box-shadow: 0 0 12px rgba(56,189,248,0.12);
-    background: rgba(56,189,248,0.06);
+    color: var(--accent); border-color: var(--accent);
+    background: var(--accent-subtle);
   }
   .settings-btn .gear-icon {
     display: inline-block;
@@ -704,29 +572,27 @@
   /* ── Settings Modal ── */
   .settings-overlay {
     position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.45);
     display: flex; align-items: center; justify-content: center;
     opacity: 0; pointer-events: none;
-    transition: opacity 0.35s ease;
+    transition: opacity 0.25s ease;
   }
   .settings-overlay.open {
     opacity: 1; pointer-events: all;
   }
   .settings-modal {
-    background: rgba(15,23,42,0.95);
-    backdrop-filter: blur(24px);
-    border: 1px solid var(--border-glow);
-    border-radius: 1.2vmin;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
     padding: 3vh 2.5vw;
     width: min(90vw, 600px);
     max-height: 85vh;
     overflow-y: auto;
-    box-shadow: 0 0 80px rgba(56,189,248,0.12), 0 25px 60px rgba(0,0,0,0.5);
-    transform: scale(0.92) translateY(20px);
-    transition: transform 0.35s ease;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+    transform: scale(0.95) translateY(12px);
+    transition: transform 0.25s ease;
     scrollbar-width: thin;
-    scrollbar-color: rgba(56,189,248,0.15) transparent;
+    scrollbar-color: rgba(128,128,128,0.2) transparent;
   }
   .settings-overlay.open .settings-modal {
     transform: scale(1) translateY(0);
@@ -740,11 +606,10 @@
   .settings-modal-title {
     font-size: clamp(1.2rem, 2.2vmin, 2rem);
     font-weight: 800; color: var(--accent);
-    text-shadow: 0 0 20px var(--accent-glow);
-    letter-spacing: 0.1vw;
+    letter-spacing: 0.08vw;
   }
   .settings-close-btn {
-    background: rgba(255,255,255,0.04);
+    background: var(--bg-card-alt);
     border: 1px solid var(--border-color);
     border-radius: 0.4vmin;
     color: var(--text-muted);
@@ -754,8 +619,8 @@
     transition: all 0.3s ease;
   }
   .settings-close-btn:hover {
-    color: var(--accent-red); border-color: rgba(248,113,113,0.3);
-    background: rgba(248,113,113,0.08);
+    color: var(--accent-red); border-color: rgba(220,38,38,0.3);
+    background: rgba(220,38,38,0.08);
   }
   .settings-section {
     margin-bottom: 2.5vh;
@@ -771,8 +636,18 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 1vh 1vw;
   }
+  .theme-group-label {
+    grid-column: 1 / -1;
+    font-size: clamp(0.6rem, 1vmin, 0.85rem);
+    text-transform: uppercase;
+    letter-spacing: 0.15vw;
+    color: var(--text-dim);
+    font-weight: 700;
+    padding: 0.5vh 0 0.2vh;
+  }
+  .theme-group-label:first-child { padding-top: 0; }
   .theme-card {
-    background: rgba(255,255,255,0.02);
+    background: var(--bg-card-alt);
     border: 2px solid var(--border-color);
     border-radius: 0.8vmin;
     padding: 1.5vh 1vw;
@@ -781,15 +656,14 @@
     text-align: center;
   }
   .theme-card:hover {
-    border-color: var(--border-glow);
-    background: rgba(56,189,248,0.04);
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   }
   .theme-card.active {
     border-color: var(--accent);
-    background: rgba(56,189,248,0.08);
-    box-shadow: 0 0 25px rgba(56,189,248,0.15), inset 0 0 0 1px rgba(56,189,248,0.1);
+    background: var(--accent-subtle);
   }
   .theme-preview {
     width: 100%; height: clamp(2rem, 4vmin, 3.5rem);
@@ -808,7 +682,7 @@
   .settings-option {
     display: flex; align-items: center; justify-content: space-between;
     padding: 1vh 0;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border-color);
   }
   .settings-option:last-child { border-bottom: none; }
   .settings-option-label {
@@ -824,15 +698,15 @@
     position: relative;
     width: clamp(2.5rem, 4vmin, 3.5rem);
     height: clamp(1.3rem, 2.2vmin, 2rem);
-    background: rgba(255,255,255,0.08);
+    background: var(--bg-card-hover);
     border-radius: 2rem;
     cursor: pointer;
     transition: background 0.3s ease;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid var(--border-color);
   }
   .toggle-switch.on {
-    background: rgba(56,189,248,0.3);
-    border-color: rgba(56,189,248,0.4);
+    background: var(--accent);
+    border-color: var(--accent-hover);
   }
   .toggle-switch::after {
     content: '';
@@ -840,20 +714,20 @@
     top: 2px; left: 2px;
     width: calc(clamp(1.3rem, 2.2vmin, 2rem) - 6px);
     height: calc(clamp(1.3rem, 2.2vmin, 2rem) - 6px);
-    background: var(--text-muted);
+    background: #ffffff;
     border-radius: 50%;
     transition: all 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
   }
   .toggle-switch.on::after {
     left: calc(100% - clamp(1.3rem, 2.2vmin, 2rem) + 4px);
-    background: var(--accent);
-    box-shadow: 0 0 8px var(--accent-glow);
+    background: #ffffff;
   }
 
   /* ── Settings Select Dropdown ── */
   .settings-select {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
     border-radius: 0.4vmin;
     color: var(--text-primary);
     font-family: 'JetBrains Mono', monospace;
@@ -864,18 +738,17 @@
     transition: border-color 0.3s ease;
     -webkit-appearance: none;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.5vw center;
     padding-right: 1.5vw;
   }
   .settings-select:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 8px rgba(56,189,248,0.15);
   }
   .settings-select option {
-    background: #1e293b;
-    color: #e2e8f0;
+    background: var(--bg-card);
+    color: var(--text-primary);
   }
 
   /* ── Settings Range Slider ── */
@@ -891,7 +764,7 @@
     -webkit-appearance: none; appearance: none;
     width: clamp(5rem, 10vmin, 8rem);
     height: 4px;
-    background: rgba(255,255,255,0.08);
+    background: var(--border-color);
     border-radius: 2px;
     outline: none;
     cursor: pointer;
@@ -902,7 +775,6 @@
     height: clamp(0.8rem, 1.4vmin, 1.2rem);
     background: var(--accent);
     border-radius: 50%;
-    box-shadow: 0 0 6px var(--accent-glow);
     cursor: pointer;
   }
   .settings-range::-moz-range-thumb {
@@ -911,7 +783,6 @@
     background: var(--accent);
     border-radius: 50%;
     border: none;
-    box-shadow: 0 0 6px var(--accent-glow);
     cursor: pointer;
   }
 </style>
@@ -962,7 +833,7 @@
 
       <div class="wx-panel-header">
         <div class="wx-panel-title">Live Weather Intelligence</div>
-        <div class="wx-panel-badge">11 Stations</div>
+        <div class="wx-panel-badge">7 Stations</div>
       </div>
 
       <div class="wx-content">
@@ -1160,93 +1031,7 @@
             <div class="airport-metar-raw" id="lhr-metar">--</div>
           </div>
 
-          <div class="airport-card" id="wx-akl">
-            <div class="airport-header">
-              <div class="airport-icao-wrap">
-                <span class="airport-icao">AKL</span>
-                <span class="airport-wx-icon" id="akl-icon"></span>
-              </div>
-              <span class="airport-header-temp" id="akl-temp">--<span class="temp-unit">°F</span></span>
-            </div>
-            <div class="airport-name">Auckland Intl</div>
-            <div class="airport-metrics">
-              <div class="airport-metric"><span class="airport-metric-label">Cat</span><span class="airport-metric-value airport-conditions" id="akl-cat">---</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="akl-dewpt">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="akl-wind">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="akl-gust">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="akl-vis">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="akl-ceil">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="akl-alt">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="akl-hum">--</span></div>
-            </div>
-            <div class="airport-metar-raw" id="akl-metar">--</div>
-          </div>
 
-          <div class="airport-card" id="wx-pvg">
-            <div class="airport-header">
-              <div class="airport-icao-wrap">
-                <span class="airport-icao">PVG</span>
-                <span class="airport-wx-icon" id="pvg-icon"></span>
-              </div>
-              <span class="airport-header-temp" id="pvg-temp">--<span class="temp-unit">&deg;F</span></span>
-            </div>
-            <div class="airport-name">Shanghai Pudong</div>
-            <div class="airport-metrics">
-              <div class="airport-metric"><span class="airport-metric-label">Cat</span><span class="airport-metric-value airport-conditions" id="pvg-cat">---</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="pvg-dewpt">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="pvg-wind">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="pvg-gust">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="pvg-vis">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="pvg-ceil">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="pvg-alt">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="pvg-hum">--</span></div>
-            </div>
-            <div class="airport-metar-raw" id="pvg-metar">--</div>
-          </div>
-
-          <div class="airport-card" id="wx-fco">
-            <div class="airport-header">
-              <div class="airport-icao-wrap">
-                <span class="airport-icao">FCO</span>
-                <span class="airport-wx-icon" id="fco-icon"></span>
-              </div>
-              <span class="airport-header-temp" id="fco-temp">--<span class="temp-unit">&deg;F</span></span>
-            </div>
-            <div class="airport-name">Rome Fiumicino</div>
-            <div class="airport-metrics">
-              <div class="airport-metric"><span class="airport-metric-label">Cat</span><span class="airport-metric-value airport-conditions" id="fco-cat">---</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="fco-dewpt">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="fco-wind">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="fco-gust">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="fco-vis">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="fco-ceil">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="fco-alt">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="fco-hum">--</span></div>
-            </div>
-            <div class="airport-metar-raw" id="fco-metar">--</div>
-          </div>
-
-          <div class="airport-card" id="wx-den">
-            <div class="airport-header">
-              <div class="airport-icao-wrap">
-                <span class="airport-icao">DEN</span>
-                <span class="airport-wx-icon" id="den-icon"></span>
-              </div>
-              <span class="airport-header-temp" id="den-temp">--<span class="temp-unit">&deg;F</span></span>
-            </div>
-            <div class="airport-name">Denver Intl</div>
-            <div class="airport-metrics">
-              <div class="airport-metric"><span class="airport-metric-label">Cat</span><span class="airport-metric-value airport-conditions" id="den-cat">---</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Dewpt</span><span class="airport-metric-value" id="den-dewpt">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Wind</span><span class="airport-metric-value" id="den-wind">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Gust</span><span class="airport-metric-value" id="den-gust">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Vis</span><span class="airport-metric-value" id="den-vis">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Ceil</span><span class="airport-metric-value" id="den-ceil">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Alt</span><span class="airport-metric-value" id="den-alt">--</span></div>
-              <div class="airport-metric"><span class="airport-metric-label">Hum</span><span class="airport-metric-value" id="den-hum">--</span></div>
-            </div>
-            <div class="airport-metar-raw" id="den-metar">--</div>
-          </div>
 
         </div><!-- /airport-grid -->
     </div><!-- /right-panel -->
@@ -1286,40 +1071,70 @@
         <div class="settings-section-title">Theme</div>
         <div class="theme-grid" id="theme-grid">
 
-          <div class="theme-card active" data-theme="default">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#060a14,#0f172a,#1e293b);"></div>
-            <div class="theme-name">Deep Space</div>
-            <div class="theme-desc">Default dark blue theme</div>
+          <div class="theme-group-label">Dark</div>
+
+          <div class="theme-card active" data-theme="dark">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0f1117,#1c1e2a,#5b7bf7);"></div>
+            <div class="theme-name">Professional</div>
+            <div class="theme-desc">Clean dark default</div>
+          </div>
+          <div class="theme-card" data-theme="dark-slate">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#101214,#1e2024,#8295ad);"></div>
+            <div class="theme-name">Slate</div>
+            <div class="theme-desc">Neutral dark gray</div>
+          </div>
+          <div class="theme-card" data-theme="dark-ocean">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0c1220,#182235,#3b82f6);"></div>
+            <div class="theme-name">Ocean</div>
+            <div class="theme-desc">Deep navy blue</div>
+          </div>
+          <div class="theme-card" data-theme="dark-emerald">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0a1210,#162420,#34d399);"></div>
+            <div class="theme-name">Emerald</div>
+            <div class="theme-desc">Dark green tones</div>
+          </div>
+          <div class="theme-card" data-theme="dark-violet">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#100e18,#1e1a32,#a78bfa);"></div>
+            <div class="theme-name">Violet</div>
+            <div class="theme-desc">Deep purple accent</div>
+          </div>
+          <div class="theme-card" data-theme="dark-rose">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#140e10,#281c22,#fb7185);"></div>
+            <div class="theme-name">Rose</div>
+            <div class="theme-desc">Warm dark rose</div>
           </div>
 
-          <div class="theme-card" data-theme="midnight">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#0a0a0f,#1a1a2e,#16213e);"></div>
-            <div class="theme-name">Midnight</div>
-            <div class="theme-desc">Ultra dark indigo</div>
-          </div>
+          <div class="theme-group-label">Light</div>
 
-          <div class="theme-card" data-theme="emerald">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#041210,#0a2520,#0f3b30);"></div>
-            <div class="theme-name">Emerald Ops</div>
-            <div class="theme-desc">Green tactical display</div>
+          <div class="theme-card" data-theme="light">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f0f2f5,#ffffff,#4f6bed);"></div>
+            <div class="theme-name">Professional</div>
+            <div class="theme-desc">Clean light default</div>
           </div>
-
-          <div class="theme-card" data-theme="amber">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#140e04,#251a0a,#3b2810);"></div>
-            <div class="theme-name">Amber Alert</div>
-            <div class="theme-desc">Warm amber operations</div>
+          <div class="theme-card" data-theme="light-slate">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f1f5f9,#ffffff,#475569);"></div>
+            <div class="theme-name">Slate</div>
+            <div class="theme-desc">Neutral gray tones</div>
           </div>
-
-          <div class="theme-card" data-theme="crimson">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#140408,#250a10,#3b101a);"></div>
-            <div class="theme-name">Crimson</div>
-            <div class="theme-desc">Red-toned dark theme</div>
+          <div class="theme-card" data-theme="light-ocean">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f0f7ff,#ffffff,#2563eb);"></div>
+            <div class="theme-name">Ocean</div>
+            <div class="theme-desc">Cool blue accent</div>
           </div>
-
-          <div class="theme-card" data-theme="arctic">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#0a1018,#101c2e,#182a40);"></div>
-            <div class="theme-name">Arctic</div>
-            <div class="theme-desc">Ice-cold pale blue</div>
+          <div class="theme-card" data-theme="light-emerald">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f0fdf4,#ffffff,#059669);"></div>
+            <div class="theme-name">Emerald</div>
+            <div class="theme-desc">Fresh green</div>
+          </div>
+          <div class="theme-card" data-theme="light-violet">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f5f3ff,#ffffff,#7c3aed);"></div>
+            <div class="theme-name">Violet</div>
+            <div class="theme-desc">Purple modern</div>
+          </div>
+          <div class="theme-card" data-theme="light-rose">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#fff5f5,#ffffff,#e11d48);"></div>
+            <div class="theme-name">Rose</div>
+            <div class="theme-desc">Warm rose</div>
           </div>
 
         </div>
@@ -1441,8 +1256,7 @@
     // ── Weather Config ──
     const STATIONS = {
       dfw: 'KDFW', clt: 'KCLT', ord: 'KORD', mia: 'KMIA',
-      lax: 'KLAX', jfk: 'KJFK', lhr: 'EGLL', akl: 'NZAA',
-      pvg: 'ZSPD', fco: 'LIRF', den: 'KDEN'
+      lax: 'KLAX', jfk: 'KJFK', lhr: 'EGLL'
     };
     const WX_BASE  = 'https://aviationweather.gov/api/data/metar';
     const WX_PROXIES = [
@@ -1454,22 +1268,21 @@
     const WPOLL = 5 * 60 * 1000;     // poll every 5 min
     const STALE_MS = 15 * 60 * 1000; // stale after 15 min
     const FETCH_TIMEOUT = 15000;      // 15s fetch timeout per proxy attempt
-    const MAX_CONSECUTIVE_ERRORS = 10; // reload after this many consecutive fetch failures
-    const HARD_REFRESH_MS = 40 * 60 * 1000; // hard F5 page refresh every 40 min
-    const WATCHDOG_INTERVAL = 60 * 1000;    // check feed health every 60s
-    const WATCHDOG_STALE_LIMIT = 10 * 60 * 1000; // force re-fetch if no success for 10 min
-    const FAILOVER_MS = 68 * 60 * 1000;          // redirect to Clocks.html after 68 min with no updates
-    const FAILOVER_PAGE = 'Clocks.html';
+    const MAX_CONSECUTIVE_ERRORS = 5;  // hard reload after this many consecutive fetch failures
+    const HARD_REFRESH_MS = 20 * 60 * 1000; // hard F5 page refresh every 20 min to stay fresh
+    const WATCHDOG_INTERVAL = 30 * 1000;    // check feed health every 30s
+    const WATCHDOG_STALE_LIMIT = 5 * 60 * 1000; // force re-fetch if no success for 5 min
+    const RELOAD_AFTER_STALE_MS = 15 * 60 * 1000; // hard reload if no success for 15 min
     const pageLoadTime = Date.now();
     let lastWxFetch = 0;
     let consecutiveFetchErrors = 0;
 
     // ── Settings State (moved early to avoid temporal dead zone) ──
     let settings = {
-      theme: 'default',
-      scanlines: true,
-      bgAnim: true,
-      hoverEffects: true,
+      theme: 'dark',
+      scanlines: false,
+      bgAnim: false,
+      hoverEffects: false,
       colorCode: true,
       catAccent: true,
       showMetar: true,
@@ -1483,6 +1296,9 @@
       const saved = localStorage.getItem('ops-settings');
       if (saved) settings = { ...settings, ...JSON.parse(saved) };
     } catch(e) {}
+    // Migrate old theme names
+    const _tmig = {default:'dark',slate:'light-slate',ocean:'light-ocean',emerald:'light-emerald',violet:'light-violet',rose:'light-rose'};
+    if (_tmig[settings.theme]) settings.theme = _tmig[settings.theme];
 
     // ── DOM References ──
     const $ = id => document.getElementById(id);
@@ -1680,7 +1496,7 @@
     }
     // Category color for card accent
     const CAT_COLORS = {
-      VFR: '#34d399', MVFR: '#60a5fa', IFR: '#f87171', LIFR: '#e879f9'
+      VFR: '#34d399', MVFR: '#60a5fa', IFR: '#f87171', LIFR: '#c084fc'
     };
 
     // ── Format Observation Time ──
@@ -1858,101 +1674,235 @@
     // ═══════════════════════════════════════════════════════════════
 
     const THEMES = {
-      default: {
-        '--bg-primary':    '#060a14',
-        '--bg-card':       'rgba(15, 23, 42, 0.65)',
-        '--bg-card-alt':   'rgba(22, 33, 55, 0.55)',
-        '--bg-card-hover': 'rgba(30, 42, 66, 0.7)',
-        '--border-color':  'rgba(56, 189, 248, 0.08)',
-        '--border-glow':   'rgba(56, 189, 248, 0.22)',
-        '--accent':        '#38bdf8',
-        '--accent-glow':   'rgba(56, 189, 248, 0.35)',
-        '--accent-green':  '#34d399',
-        '--accent-amber':  '#fbbf24',
-        '--accent-red':    '#f87171',
-        '--accent-purple': '#a78bfa',
-        'orb1': 'rgba(99, 102, 241, 0.4)',
-        'orb2': 'rgba(14, 165, 233, 0.35)',
+      // ─── Dark Themes ───
+      dark: {
+        _dark: true,
+        '--bg-primary': '#0f1117', '--bg-secondary': '#161821',
+        '--bg-card': '#1c1e2a', '--bg-card-alt': '#22253a', '--bg-card-hover': '#282c42',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#2a2e3f', '--border-hover': '#3a3f55',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#5b7bf7', '--accent-hover': '#4568e0',
+        '--accent-subtle': 'rgba(91,123,247,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#2a2e3f', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
       },
-      midnight: {
-        '--bg-primary':    '#0a0a0f',
-        '--bg-card':       'rgba(20, 20, 40, 0.65)',
-        '--bg-card-alt':   'rgba(26, 26, 46, 0.55)',
-        '--bg-card-hover': 'rgba(35, 35, 60, 0.7)',
-        '--border-color':  'rgba(120, 100, 255, 0.08)',
-        '--border-glow':   'rgba(120, 100, 255, 0.22)',
-        '--accent':        '#818cf8',
-        '--accent-glow':   'rgba(129, 140, 248, 0.35)',
-        '--accent-green':  '#6ee7b7',
-        '--accent-amber':  '#fcd34d',
-        '--accent-red':    '#fca5a5',
-        '--accent-purple': '#c4b5fd',
-        'orb1': 'rgba(129, 140, 248, 0.35)',
-        'orb2': 'rgba(99, 102, 241, 0.3)',
+      'dark-slate': {
+        _dark: true,
+        '--bg-primary': '#101214', '--bg-secondary': '#181a1e',
+        '--bg-card': '#1e2024', '--bg-card-alt': '#24272c', '--bg-card-hover': '#2c3036',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#2e3238', '--border-hover': '#3e4248',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#8295ad', '--accent-hover': '#6e839c',
+        '--accent-subtle': 'rgba(130,149,173,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#2e3238', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
       },
-      emerald: {
-        '--bg-primary':    '#041210',
-        '--bg-card':       'rgba(10, 40, 30, 0.65)',
-        '--bg-card-alt':   'rgba(15, 50, 38, 0.55)',
-        '--bg-card-hover': 'rgba(20, 65, 48, 0.7)',
-        '--border-color':  'rgba(52, 211, 153, 0.08)',
-        '--border-glow':   'rgba(52, 211, 153, 0.22)',
-        '--accent':        '#34d399',
-        '--accent-glow':   'rgba(52, 211, 153, 0.35)',
-        '--accent-green':  '#6ee7b7',
-        '--accent-amber':  '#fbbf24',
-        '--accent-red':    '#f87171',
-        '--accent-purple': '#a78bfa',
-        'orb1': 'rgba(16, 185, 129, 0.3)',
-        'orb2': 'rgba(52, 211, 153, 0.25)',
+      'dark-ocean': {
+        _dark: true,
+        '--bg-primary': '#0c1220', '--bg-secondary': '#121a2c',
+        '--bg-card': '#182235', '--bg-card-alt': '#1e2a40', '--bg-card-hover': '#243248',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#263450', '--border-hover': '#344868',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#3b82f6', '--accent-hover': '#2563eb',
+        '--accent-subtle': 'rgba(59,130,246,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#263450', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
       },
-      amber: {
-        '--bg-primary':    '#140e04',
-        '--bg-card':       'rgba(40, 30, 12, 0.65)',
-        '--bg-card-alt':   'rgba(50, 38, 16, 0.55)',
-        '--bg-card-hover': 'rgba(65, 50, 22, 0.7)',
-        '--border-color':  'rgba(251, 191, 36, 0.08)',
-        '--border-glow':   'rgba(251, 191, 36, 0.22)',
-        '--accent':        '#fbbf24',
-        '--accent-glow':   'rgba(251, 191, 36, 0.35)',
-        '--accent-green':  '#34d399',
-        '--accent-amber':  '#f59e0b',
-        '--accent-red':    '#f87171',
-        '--accent-purple': '#c4b5fd',
-        'orb1': 'rgba(245, 158, 11, 0.3)',
-        'orb2': 'rgba(251, 191, 36, 0.25)',
+      'dark-emerald': {
+        _dark: true,
+        '--bg-primary': '#0a1210', '--bg-secondary': '#101a16',
+        '--bg-card': '#162420', '--bg-card-alt': '#1c2e28', '--bg-card-hover': '#223830',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#243e34', '--border-hover': '#345548',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#34d399', '--accent-hover': '#10b981',
+        '--accent-subtle': 'rgba(52,211,153,0.12)',
+        '--accent-green': '#34d399', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#243e34', '--completed-dot': '#34d399',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
       },
-      crimson: {
-        '--bg-primary':    '#140408',
-        '--bg-card':       'rgba(40, 12, 18, 0.65)',
-        '--bg-card-alt':   'rgba(50, 16, 24, 0.55)',
-        '--bg-card-hover': 'rgba(65, 22, 32, 0.7)',
-        '--border-color':  'rgba(248, 113, 113, 0.08)',
-        '--border-glow':   'rgba(248, 113, 113, 0.22)',
-        '--accent':        '#f87171',
-        '--accent-glow':   'rgba(248, 113, 113, 0.35)',
-        '--accent-green':  '#34d399',
-        '--accent-amber':  '#fbbf24',
-        '--accent-red':    '#ef4444',
-        '--accent-purple': '#fca5a5',
-        'orb1': 'rgba(239, 68, 68, 0.3)',
-        'orb2': 'rgba(248, 113, 113, 0.25)',
+      'dark-violet': {
+        _dark: true,
+        '--bg-primary': '#100e18', '--bg-secondary': '#161324',
+        '--bg-card': '#1e1a32', '--bg-card-alt': '#24203e', '--bg-card-hover': '#2c284a',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#302c4a', '--border-hover': '#403c62',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#a78bfa', '--accent-hover': '#8b5cf6',
+        '--accent-subtle': 'rgba(167,139,250,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#e05555', '--accent-purple': '#a78bfa',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#302c4a', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
       },
-      arctic: {
-        '--bg-primary':    '#0a1018',
-        '--bg-card':       'rgba(16, 28, 46, 0.65)',
-        '--bg-card-alt':   'rgba(22, 36, 56, 0.55)',
-        '--bg-card-hover': 'rgba(30, 46, 70, 0.7)',
-        '--border-color':  'rgba(147, 197, 253, 0.08)',
-        '--border-glow':   'rgba(147, 197, 253, 0.22)',
-        '--accent':        '#93c5fd',
-        '--accent-glow':   'rgba(147, 197, 253, 0.35)',
-        '--accent-green':  '#6ee7b7',
-        '--accent-amber':  '#fde68a',
-        '--accent-red':    '#fca5a5',
-        '--accent-purple': '#c4b5fd',
-        'orb1': 'rgba(96, 165, 250, 0.3)',
-        'orb2': 'rgba(147, 197, 253, 0.25)',
+      'dark-rose': {
+        _dark: true,
+        '--bg-primary': '#140e10', '--bg-secondary': '#1e1418',
+        '--bg-card': '#281c22', '--bg-card-alt': '#30242a', '--bg-card-hover': '#382c32',
+        '--bg-metric': 'rgba(255,255,255,0.03)',
+        '--border-color': '#3e3036', '--border-hover': '#544848',
+        '--text-primary': '#e8eaed', '--text-secondary': '#a1a7b4',
+        '--text-muted': '#6b7280', '--text-dim': '#4d5463',
+        '--accent': '#fb7185', '--accent-hover': '#f43f5e',
+        '--accent-subtle': 'rgba(251,113,133,0.12)',
+        '--accent-green': '#3dbb78', '--accent-amber': '#e5a12e',
+        '--accent-red': '#fb7185', '--accent-purple': '#9278e0',
+        '--shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+        '--shadow-md': '0 2px 8px rgba(0,0,0,0.35)',
+        '--shadow-lg': '0 4px 16px rgba(0,0,0,0.4)',
+        '--upcoming-dot': '#3e3036', '--completed-dot': '#3dbb78',
+        '--alert-bg': 'rgba(229,161,46,0.08)',
+        '--alert-border': 'rgba(229,161,46,0.3)', '--alert-text': '#e5a12e',
+      },
+      // ─── Light Themes ───
+      light: {
+        _dark: false,
+        '--bg-primary': '#f0f2f5', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#f8f9fb', '--bg-card-hover': '#f0f2f5',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#e2e5ea', '--border-hover': '#cbd0d8',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#4f6bed', '--accent-hover': '#3d57d9',
+        '--accent-subtle': 'rgba(79,107,237,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#7c3aed',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#e2e5ea', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-slate': {
+        _dark: false,
+        '--bg-primary': '#f1f5f9', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#f8fafc', '--bg-card-hover': '#f1f5f9',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#e2e8f0', '--border-hover': '#cbd5e1',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#475569', '--accent-hover': '#334155',
+        '--accent-subtle': 'rgba(71,85,105,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#6366f1',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#e2e8f0', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-ocean': {
+        _dark: false,
+        '--bg-primary': '#f0f7ff', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#f5f9ff', '--bg-card-hover': '#edf4ff',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#dbeafe', '--border-hover': '#bfdbfe',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#2563eb', '--accent-hover': '#1d4ed8',
+        '--accent-subtle': 'rgba(37,99,235,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#7c3aed',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#dbeafe', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-emerald': {
+        _dark: false,
+        '--bg-primary': '#f0fdf4', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#f7fdf9', '--bg-card-hover': '#ecfdf5',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#d1fae5', '--border-hover': '#a7f3d0',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#059669', '--accent-hover': '#047857',
+        '--accent-subtle': 'rgba(5,150,105,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#7c3aed',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#d1fae5', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-violet': {
+        _dark: false,
+        '--bg-primary': '#f5f3ff', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#faf8ff', '--bg-card-hover': '#f3f0ff',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#e9e5f5', '--border-hover': '#d8d0f0',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#7c3aed', '--accent-hover': '#6d28d9',
+        '--accent-subtle': 'rgba(124,58,237,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#6d28d9',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#e9e5f5', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
+      },
+      'light-rose': {
+        _dark: false,
+        '--bg-primary': '#fff5f5', '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff', '--bg-card-alt': '#fef7f7', '--bg-card-hover': '#fff0f0',
+        '--bg-metric': 'rgba(0,0,0,0.025)',
+        '--border-color': '#fce7e7', '--border-hover': '#fcd5d5',
+        '--text-primary': '#1e293b', '--text-secondary': '#475569',
+        '--text-muted': '#64748b', '--text-dim': '#94a3b8',
+        '--accent': '#e11d48', '--accent-hover': '#be123c',
+        '--accent-subtle': 'rgba(225,29,72,0.08)',
+        '--accent-green': '#16a34a', '--accent-amber': '#d97706',
+        '--accent-red': '#dc2626', '--accent-purple': '#7c3aed',
+        '--shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        '--shadow-md': '0 1px 4px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+        '--shadow-lg': '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+        '--upcoming-dot': '#fce7e7', '--completed-dot': '#16a34a',
+        '--alert-bg': 'rgba(217,119,6,0.06)',
+        '--alert-border': 'rgba(217,119,6,0.25)', '--alert-text': '#b45309',
       }
     };
 
@@ -1967,18 +1917,21 @@
 
     // ── Apply Theme ──
     function applyTheme(name) {
-      const theme = THEMES[name];
+      const theme = THEMES[name] || THEMES['dark'];
       if (!theme) return;
       const root = document.documentElement;
       for (const [key, val] of Object.entries(theme)) {
         if (key.startsWith('--')) root.style.setProperty(key, val);
       }
-      // Update orb backgrounds
-      const bgMesh = document.querySelector('.bg-mesh');
-      if (bgMesh && theme.orb1) {
-        bgMesh.style.setProperty('--orb1-color', theme.orb1);
-        bgMesh.style.setProperty('--orb2-color', theme.orb2);
-      }
+      // Toggle light-mode class for non-variable styling
+      document.body.classList.toggle('light-mode', !theme._dark);
+      // Save vars to localStorage for sub-page theme sync
+      try {
+        const vars = {};
+        for (const [k, v] of Object.entries(theme)) { if (k.startsWith('--')) vars[k] = v; }
+        localStorage.setItem('ops-theme-vars', JSON.stringify(vars));
+        localStorage.setItem('ops-theme-dark', theme._dark ? '1' : '0');
+      } catch(e) {}
       // Update active card
       document.querySelectorAll('.theme-card').forEach(c => {
         c.classList.toggle('active', c.dataset.theme === name);
@@ -2197,16 +2150,17 @@
         const now = Date.now();
         const sinceLastFetch = lastWxFetch > 0 ? now - lastWxFetch : Infinity;
 
-        // FAILOVER: if no successful update in 68 min, redirect to backup Clocks page
-        if (sinceLastFetch >= FAILOVER_MS) {
-          console.error('Watchdog: no weather update for ' + Math.floor(sinceLastFetch / 60000) + 'm — failover to ' + FAILOVER_PAGE);
-          window.location.href = FAILOVER_PAGE;
+        // HARD RELOAD: if no successful update in 15 min, do a full page reload to recover
+        if (sinceLastFetch >= RELOAD_AFTER_STALE_MS) {
+          console.error('Watchdog: no weather update for ' + Math.floor(sinceLastFetch / 60000) + 'm — hard reloading page');
+          location.reload();
           return;
         }
 
         // If we haven't had a successful fetch in WATCHDOG_STALE_LIMIT, force one now
         if (sinceLastFetch > WATCHDOG_STALE_LIMIT) {
           console.warn('Watchdog: weather data stale for ' + Math.floor(sinceLastFetch / 60000) + 'm — forcing re-fetch');
+          consecutiveFetchErrors = 0; // reset so we get fresh retry attempts
           fetchWx();
           // Also restart the polling scheduler in case it died
           scheduleNextFetch();
@@ -2266,7 +2220,7 @@
       e.preventDefault();
     });
 
-    console.log('Operations Command Center initialized — hard refresh every ' + Math.round(HARD_REFRESH_MS / 60000) + 'm, watchdog every ' + Math.round(WATCHDOG_INTERVAL / 1000) + 's');
+    console.log('Operations Command Center initialized — hard refresh every ' + Math.round(HARD_REFRESH_MS / 60000) + 'm, watchdog every ' + Math.round(WATCHDOG_INTERVAL / 1000) + 's, reload if stale ' + Math.round(RELOAD_AFTER_STALE_MS / 60000) + 'm');
   </script>
 </body>
 </html>
